@@ -56,7 +56,9 @@ export default function ResetPassword() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Erro ao redefinir a senha.');
+        
+        const errorText = await response.text();
+        throw new Error(errorText || 'Erro ao redefinir a senha.');
       }
 
       setMessage('Senha redefinida com sucesso! Redirecionando para o login...');
