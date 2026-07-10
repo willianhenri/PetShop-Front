@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 
 export default function Login() {
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -17,19 +17,19 @@ export default function Login() {
       const response = await fetch('https://manager-petshop.onrender.com/api/Auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        
+        body: JSON.stringify({ username, password }),
       });
 
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(errorText || 'E-mail ou senha incorretos.');
+        throw new Error(errorText || 'Usuário ou senha incorretos.');
       }
 
       const data = await response.json();
       
-      
       localStorage.setItem('petshop_token', data.token);
-      localStorage.setItem('petshop_role', data.role); 
+      localStorage.setItem('petshop_role', data.role);
 
       navigate('/home');
     } catch (err) {
@@ -47,12 +47,24 @@ export default function Login() {
         
         <form onSubmit={handleLogin}>
           <div style={{ marginBottom: '15px' }}>
-            <label style={{ display: 'block', marginBottom: '5px' }}>E-mail:</label>
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }} />
+            <label style={{ display: 'block', marginBottom: '5px' }}>Usuário (Username):</label>
+            <input 
+              type="text" 
+              value={username} 
+              onChange={(e) => setUsername(e.target.value)} 
+              required 
+              style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }} 
+            />
           </div>
           <div style={{ marginBottom: '15px' }}>
             <label style={{ display: 'block', marginBottom: '5px' }}>Senha:</label>
-            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }} />
+            <input 
+              type="password" 
+              value={password} 
+              onChange={(e) => setPassword(e.target.value)} 
+              required 
+              style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }} 
+            />
           </div>
           <button type="submit" disabled={loading} style={{ width: '100%', padding: '10px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
             {loading ? 'Carregando...' : 'Entrar'}
