@@ -7,6 +7,7 @@ import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import DashboardLayout from './components/DashboardLayout';
 import Clients from './pages/Clients';
+import Pets from './pages/Pets.jsx';
 
 // Bloqueio 1: Precisa estar logado
 function ProtectedRoute({ children }) {
@@ -59,6 +60,14 @@ function App() {
           <ProtectedRoute>
             <DashboardLayout>
               <Clients />
+            </DashboardLayout>
+          </ProtectedRoute>
+        } />
+
+        <Route path="/pets" element={
+          <ProtectedRoute>
+            <DashboardLayout>
+              <Pets />
             </DashboardLayout>
           </ProtectedRoute>
         } />
