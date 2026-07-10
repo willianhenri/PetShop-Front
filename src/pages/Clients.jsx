@@ -27,7 +27,7 @@ export default function Clients() {
       if (response.ok) {
         const data = await response.json();
         // Garante que o 'data' seja uma lista antes de salvar, senão joga uma lista vazia
-        setClients(Array.isArray(data) ? data : []);
+        setClients(Array.isArray(data.data) ? data.data : []);
       } else {
         console.error("A API retornou um erro:", response.status);
         setClients([]); // Evita crash salvando vazio
@@ -135,7 +135,6 @@ export default function Clients() {
                 <td style={{ padding: '12px' }}>{client.name || 'Sem nome'}</td>
                 <td style={{ padding: '12px' }}>{client.phone || 'Sem telefone'}</td>
                 <td style={{ padding: '12px' }}>{client.email || 'Sem e-mail'}</td>
-                {/* 👇 Proteção adicionada aqui: se for nulo, mostra 'Não informado' 👇 */}
                 <td style={{ padding: '12px' }}>{client.address || 'Não informado'}</td> 
               </tr>
             ))
