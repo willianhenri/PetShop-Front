@@ -4,7 +4,7 @@ import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 
 function App() {
-  // Mantive o seu estilo do Header idêntico aqui
+
   const headerStyle = {
     backgroundColor: '#1a1a1a',
     color: 'white',
@@ -17,7 +17,7 @@ function App() {
   return (
     <BrowserRouter>
       <div>
-        {/* O Header fica aqui fixo, aparecendo em todas as páginas */}
+       
         <header style={headerStyle}>
           <h2>Meu PetShop</h2>
           <nav>
@@ -25,12 +25,12 @@ function App() {
           </nav>
         </header>
 
-        {/* O React Router decide qual componente carregar aqui embaixo baseado na URL */}
+       
         <Routes>
-          {/* Quando abrir a URL normal /forgot-password */}
+         
           <Route path="/forgot-password" element={<ForgotPassword />} />
           
-          {/* Quando o usuário clicar no link do e-mail /reset-password */}
+          
           <Route path="/reset-password" element={<ResetPassword />} />
         </Routes>
       </div>
