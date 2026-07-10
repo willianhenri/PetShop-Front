@@ -6,6 +6,7 @@ import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import DashboardLayout from './components/DashboardLayout';
+import Clients from './pages/Clients';
 
 // Bloqueio 1: Precisa estar logado
 function ProtectedRoute({ children }) {
