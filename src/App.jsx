@@ -54,6 +54,14 @@ function App() {
           </AdminRoute>
         } />
 
+        <Route path="/clientes" element={
+          <ProtectedRoute>
+            <DashboardLayout>
+              <Clients />
+            </DashboardLayout>
+          </ProtectedRoute>
+        } />
+
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

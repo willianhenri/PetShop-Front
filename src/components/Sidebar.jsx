@@ -30,14 +30,14 @@ export default function Sidebar() {
 
       {/* Menu de Navegação */}
       <nav style={{ flex: 1, marginTop: '10px' }}>
-        <Link to="/home" style={linkStyle}>📊 Painel (Home)</Link>
+        <Link to="/home" style={linkStyle}>📊 Home</Link>
         <Link to="/clientes" style={linkStyle}>👥 Clientes</Link>
         <Link to="/pets" style={linkStyle}>🐶 Pets</Link>
         <Link to="/agenda" style={linkStyle}>📅 Agenda</Link>
-        <Link to="/servicos" style={linkStyle}>✂️ Serviços (Tosa/Banho)</Link>
+        <Link to="/servicos" style={linkStyle}>✂️ Serviços</Link>
         <Link to="/produtos" style={linkStyle}>📦 Produtos</Link>
         
-        {/* Mostra botão de Registro só se for Admin */}
+        
         {role === 'Admin' && (
           <Link to="/register" style={{ ...linkStyle, backgroundColor: '#27ae60' }}>⚙️ Novo Usuário</Link>
         )}
