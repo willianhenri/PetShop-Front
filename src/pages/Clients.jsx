@@ -23,18 +23,51 @@ export default function Clients() {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       
-      // Valida se a resposta realmente veio correta (Status 200)
+     
       if (response.ok) {
         const data = await response.json();
-        // Garante que o 'data' seja uma lista antes de salvar, senão joga uma lista vazia
+      
         setClients(Array.isArray(data.data) ? data.data : []);
       } else {
         console.error("A API retornou um erro:", response.status);
-        setClients([]); // Evita crash salvando vazio
+        setClients([]); 
       }
     } catch (err) {
       console.error("Erro ao buscar clientes:", err);
-      setClients([]); // Evita crash se o servidor estiver fora ou der erro de rede
+      setClients([]); 
+    }
+  };
+
+
+ const handleDeleteClient = async (id) => {
+    
+    const confirmDelete = window.confirm("Tem certeza que deseja excluir este cliente? Essa ação não pode ser desfeita.");
+    if (!confirmDelete) return;
+
+    try {
+      const token = localStorage.getItem('petshop_token');
+      
+      
+      const response = await fetch(`https://manager-petshop.onrender.com/api/Clients/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || 'Erro ao excluir o cliente.');
+      }
+
+      
+      setSuccess('Cliente excluído com sucesso!');
+      setError('');
+      fetchClients(); 
+
+    } catch (err) {
+      setError(err.message);
+      setSuccess('');
     }
   };
 
@@ -136,6 +169,14 @@ export default function Clients() {
                 <td style={{ padding: '12px' }}>{client.phone || 'Sem telefone'}</td>
                 <td style={{ padding: '12px' }}>{client.email || 'Sem e-mail'}</td>
                 <td style={{ padding: '12px' }}>{client.address || 'Não informado'}</td> 
+                <td style={{ padding: '12px', textAlign: 'center' }}>
+                    <button 
+                      onClick={() => handleDeleteClient(client.id)}
+                      style={{ padding: '6px 12px', backgroundColor: '#e74c3c', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}
+                    >
+                      🗑️ Excluir
+                    </button>
+                  </td>
               </tr>
             ))
           )}
