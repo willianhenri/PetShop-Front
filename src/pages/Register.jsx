@@ -20,7 +20,10 @@ export default function Register() {
     try {
       const response = await fetch('https://manager-petshop.onrender.com/api/Auth/register', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json', 
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({ username, email, password, fullName }),
       });
 
@@ -31,6 +34,7 @@ export default function Register() {
 
       setSuccess('Novo usuário cadastrado com sucesso!');
       setFullName('');
+      setUsername('');
       setEmail('');
       setPassword('');
     } catch (err) {
