@@ -20,7 +20,7 @@ export default function Register() {
       const response = await fetch('https://manager-petshop.onrender.com/api/Auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fullName, email, password }),
+        body: JSON.stringify({ username, email, password, fullName }),
       });
 
       if (!response.ok) {
@@ -51,6 +51,10 @@ export default function Register() {
           <div style={{ marginBottom: '15px' }}>
             <label style={{ display: 'block' }}>Nome Completo:</label>
             <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} required style={{ width: '100%', padding: '8px' }} />
+          </div>
+          <div style={{ marginBottom: '15px' }}>
+            <label style={{ display: 'block' }}>Nome de Usuário:</label>
+            <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} required style={{ width: '100%', padding: '8px' }} />
           </div>
           <div style={{ marginBottom: '15px' }}>
             <label style={{ display: 'block' }}>E-mail corporativo:</label>
