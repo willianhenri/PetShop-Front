@@ -5,6 +5,7 @@ import Home from './pages/Home';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
+import DashboardLayout from './components/DashboardLayout';
 
 // Bloqueio 1: Precisa estar logado
 function ProtectedRoute({ children }) {
@@ -36,16 +37,20 @@ function App() {
         <Route path="/reset-password" element={<ResetPassword />} />
         
        
-        <Route path="/home" element={
+       <Route path="/home" element={
           <ProtectedRoute>
-            <Home />
+            <DashboardLayout>
+              <Home />
+            </DashboardLayout>
           </ProtectedRoute>
         } />
 
         
         <Route path="/register" element={
           <AdminRoute>
-            <Register />
+            <DashboardLayout>
+              <Register />
+            </DashboardLayout>
           </AdminRoute>
         } />
 

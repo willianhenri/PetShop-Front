@@ -1,36 +1,24 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 
 export default function Home() {
-  const navigate = useNavigate();
   const role = localStorage.getItem('petshop_role');
 
-  const handleLogout = () => {
-    localStorage.clear();
-    navigate('/');
-  };
-
   return (
-    <div style={{ padding: '20px', fontFamily: 'Arial' }}>
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #eee', paddingBottom: '10px' }}>
-        <h1>🐾 MeuPetShop - Painel</h1>
-        <div>
-          
-          {role === 'Admin' && (
-            <button onClick={() => navigate('/register')} style={{ marginRight: '10px', padding: '8px 15px', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-              ⚙️ Cadastrar Novo Usuário
-            </button>
-          )}
-          <button onClick={handleLogout} style={{ padding: '8px 15px', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-            Sair
-          </button>
-        </div>
-      </header>
+    <div>
+      <h1 style={{ borderBottom: '2px solid #ccc', paddingBottom: '10px' }}>Painel de Controle</h1>
+      <p>Bem-vindo ao sistema interno! Seu nível de acesso atual é: <strong>{role}</strong></p>
       
-      <main style={{ marginTop: '20px' }}>
-        <h3>Bem-vindo ao sistema interno!</h3>
-        <p>Seu nível de acesso atual é: <strong>{role}</strong></p>
-      </main>
+      
+      <div style={{ display: 'flex', gap: '20px', marginTop: '20px' }}>
+         <div style={{ padding: '20px', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', flex: 1 }}>
+            <h3>Consultas Hoje</h3>
+            <p style={{ fontSize: '24px', fontWeight: 'bold', color: '#3498db' }}>0</p>
+         </div>
+         <div style={{ padding: '20px', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', flex: 1 }}>
+            <h3>Novos Clientes</h3>
+            <p style={{ fontSize: '24px', fontWeight: 'bold', color: '#2ecc71' }}>0</p>
+         </div>
+      </div>
     </div>
   );
 }
