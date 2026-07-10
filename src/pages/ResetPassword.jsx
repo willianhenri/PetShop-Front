@@ -5,8 +5,9 @@ export default function ResetPassword() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
+  const tokenBody = searchParams.get('token');
+  const token = tokenBody ? tokenBody.replace(/ /g, '+') : null;
   
-  const token = searchParams.get('token');
   const email = searchParams.get('email');
 
   const [password, setPassword] = useState('');
@@ -40,7 +41,6 @@ export default function ResetPassword() {
     setLoading(true);
 
     try {
-     
       const response = await fetch('https://manager-petshop.onrender.com/api/auth/reset-password', {
         method: 'POST',
         headers: {
@@ -53,17 +53,16 @@ export default function ResetPassword() {
         }),
       });
 
-      const data = await response.json();
+      // Lendo como texto puro para evitar o erro de JSON
+      const responseText = await response.text();
 
       if (!response.ok) {
-        
-        const errorText = await response.text();
-        throw new Error(errorText || 'Erro ao redefinir a senha.');
+        // Agora vai mostrar na tela exatamente o que o C# reclamar (ex: "Invalid token.")
+        throw new Error(responseText || 'Erro ao redefinir a senha.');
       }
 
       setMessage('Senha redefinida com sucesso! Redirecionando para o login...');
       
-     
       setTimeout(() => {
         navigate('/login');
       }, 3000);
