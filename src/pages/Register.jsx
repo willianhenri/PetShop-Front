@@ -10,6 +10,7 @@ export default function Register() {
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const token = localStorage.getItem('petshop_token');
 
   const handleRegister = async (e) => {
     e.preventDefault();
