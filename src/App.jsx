@@ -1,39 +1,56 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import Login from './pages/Login';
+import Home from './pages/Home';
+import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 
+// Bloqueio 1: Precisa estar logado
+function ProtectedRoute({ children }) {
+  const token = localStorage.getItem('petshop_token');
+  if (!token) return <Navigate to="/" replace />;
+  return children;
+}
+
+// Bloqueio 2: Precisa estar logado E ser Admin
+function AdminRoute({ children }) {
+  const token = localStorage.getItem('petshop_token');
+  const role = localStorage.getItem('petshop_role');
+  
+  if (!token || role !== 'Admin') {
+    return <Navigate to="/home" replace />; // Expulsa de volta pra Home
+  }
+  return children;
+}
+
 function App() {
-
-  const headerStyle = {
-    backgroundColor: '#1a1a1a',
-    color: 'white',
-    padding: '1rem 2rem',
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center'
-  };
-
   return (
     <BrowserRouter>
-      <div>
+      <Routes>
+        
+        <Route path="/" element={<Login />} />
+        
+        
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        
        
-        <header style={headerStyle}>
-          <h2>Meu PetShop</h2>
-          <nav>
-            <Link to="/forgot-password" style={{ color: 'white', marginRight: '15px', textDecoration: 'none' }}>Esqueci a Senha</Link>
-          </nav>
-        </header>
+        <Route path="/home" element={
+          <ProtectedRoute>
+            <Home />
+          </ProtectedRoute>
+        } />
 
-       
-        <Routes>
-         
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          
-          
-          <Route path="/reset-password" element={<ResetPassword />} />
-        </Routes>
-      </div>
+        
+        <Route path="/register" element={
+          <AdminRoute>
+            <Register />
+          </AdminRoute>
+        } />
+
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
     </BrowserRouter>
   );
 }
