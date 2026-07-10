@@ -40,39 +40,52 @@ export default function Login() {
   };
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', fontFamily: 'Arial' }}>
-      <div style={{ border: '1px solid #ccc', padding: '30px', borderRadius: '8px', width: '350px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
-        <h2>Acessar MeuPetShop</h2>
-        {error && <p style={{ color: 'red', fontSize: '14px' }}>{error}</p>}
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', fontFamily: 'Arial', backgroundColor: '#0a192f' }}>
+      <style>{`
+        body {
+          margin: 0 !important;
+          padding: 0 !important;
+          background-color: #0a192f;
+        }
+      `}</style>
+      <div style={{ border: '1px solid #233554', padding: '30px', borderRadius: '8px', width: '350px', boxShadow: '0 10px 30px rgba(0,0,0,0.5)', backgroundColor: '#112240', color: '#ffffff' }}>
+        <h2 style={{ textAlign: 'center', marginBottom: '20px' }}>Acessar MeuPetShop</h2>
+        {error && <p style={{ color: '#ff6b6b', fontSize: '14px' }}>{error}</p>}
         
         <form onSubmit={handleLogin}>
+          {/* Campo de Usuário */}
           <div style={{ marginBottom: '15px' }}>
-            <label style={{ display: 'block', marginBottom: '5px' }}>Usuário (Username):</label>
+            <label style={{ display: 'block', marginBottom: '5px', color: '#ccd6f6' }}>Usuário (Username):</label>
             <input 
               type="text" 
               value={username} 
               onChange={(e) => setUsername(e.target.value)} 
               required 
-              style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }} 
+              style={{ width: '100%', padding: '10px', boxSizing: 'border-box', backgroundColor: '#172a45', border: '1px solid #233554', color: '#ffffff', borderRadius: '4px' }} 
             />
           </div>
-          <div style={{ marginBottom: '15px' }}>
-            <label style={{ display: 'block', marginBottom: '5px' }}>Senha:</label>
+
+          {/* Campo de Senha */}
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{ display: 'block', marginBottom: '5px', color: '#ccd6f6' }}>Senha:</label>
             <input 
               type="password" 
               value={password} 
               onChange={(e) => setPassword(e.target.value)} 
               required 
-              style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }} 
+              style={{ width: '100%', padding: '10px', boxSizing: 'border-box', backgroundColor: '#172a45', border: '1px solid #233554', color: '#ffffff', borderRadius: '4px' }} 
             />
           </div>
-          <button type="submit" disabled={loading} style={{ width: '100%', padding: '10px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+
+          {/* Botão Entrar */}
+          <button type="submit" disabled={loading} style={{ width: '100%', padding: '12px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '16px' }}>
             {loading ? 'Carregando...' : 'Entrar'}
           </button>
         </form>
 
-        <div style={{ marginTop: '15px', textAlign: 'center', fontSize: '14px' }}>
-          <Link to="/forgot-password" style={{ color: '#007bff', textDecoration: 'none' }}>Esqueceu a senha?</Link>
+        {/* Link Esqueceu a Senha */}
+        <div style={{ marginTop: '20px', textAlign: 'center', fontSize: '14px' }}>
+          <Link to="/forgot-password" style={{ color: '#64ffda', textDecoration: 'none' }}>Esqueceu a senha?</Link>
         </div>
       </div>
     </div>
