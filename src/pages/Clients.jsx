@@ -23,12 +23,18 @@ export default function Clients() {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       
+      // Valida se a resposta realmente veio correta (Status 200)
       if (response.ok) {
         const data = await response.json();
-        setClients(data);
+        // Garante que o 'data' seja uma lista antes de salvar, senão joga uma lista vazia
+        setClients(Array.isArray(data) ? data : []);
+      } else {
+        console.error("A API retornou um erro:", response.status);
+        setClients([]); // Evita crash salvando vazio
       }
     } catch (err) {
       console.error("Erro ao buscar clientes:", err);
+      setClients([]); // Evita crash se o servidor estiver fora ou der erro de rede
     }
   };
 
@@ -120,20 +126,21 @@ export default function Clients() {
               <th style={{ padding: '12px', textAlign: 'left' }}>Endereço</th>
             </tr>
           </thead>
-          <tbody>
-            {clients.length === 0 ? (
-              <tr><td colSpan="4" style={{ padding: '15px', textAlign: 'center' }}>Nenhum cliente cadastrado ainda.</td></tr>
-            ) : (
-              clients.map(client => (
-                <tr key={client.id} style={{ borderBottom: '1px solid #eee' }}>
-                  <td style={{ padding: '12px' }}>{client.name}</td>
-                  <td style={{ padding: '12px' }}>{client.phone}</td>
-                  <td style={{ padding: '12px' }}>{client.email}</td>
-                  <td style={{ padding: '12px' }}>{client.address}</td>
-                </tr>
-              ))
-            )}
-          </tbody>
+        <tbody>
+          {clients.length === 0 ? (
+            <tr><td colSpan="4" style={{ padding: '15px', textAlign: 'center' }}>Nenhum cliente cadastrado ainda.</td></tr>
+          ) : (
+            clients.map(client => (
+              <tr key={client.id} style={{ borderBottom: '1px solid #eee' }}>
+                <td style={{ padding: '12px' }}>{client.name || 'Sem nome'}</td>
+                <td style={{ padding: '12px' }}>{client.phone || 'Sem telefone'}</td>
+                <td style={{ padding: '12px' }}>{client.email || 'Sem e-mail'}</td>
+                {/* 👇 Proteção adicionada aqui: se for nulo, mostra 'Não informado' 👇 */}
+                <td style={{ padding: '12px' }}>{client.address || 'Não informado'}</td> 
+              </tr>
+            ))
+          )}
+        </tbody>
         </table>
       </div>
     </div>
