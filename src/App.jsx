@@ -6,6 +6,8 @@ import Register from './pages/Register';
 import Clients from './pages/Clients';
 import Pets from './pages/Pets';
 import Users from './pages/Users'; 
+import Products from './pages/Products'; 
+import Service from './pages/Service'; 
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import DashboardLayout from './components/DashboardLayout';
@@ -65,6 +67,22 @@ function App() {
           <ProtectedRoute>
             <DashboardLayout>
               <Pets />
+            </DashboardLayout>
+          </ProtectedRoute>
+        } />
+
+        <Route path="/servicos" element={
+          <ProtectedRoute>
+            <DashboardLayout>
+              <Service />
+            </DashboardLayout>
+          </ProtectedRoute>
+        } />
+
+        <Route path="/produtos" element={
+          <ProtectedRoute>
+            <DashboardLayout>
+              <Products />
             </DashboardLayout>
           </ProtectedRoute>
         } />
