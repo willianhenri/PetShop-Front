@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../config/api';
 
 export default function Products() {
   const [products, setProducts] = useState([]);
@@ -20,7 +21,7 @@ export default function Products() {
   const fetchProducts = async () => {
     try {
       const token = localStorage.getItem('petshop_token');
-      const response = await fetch('https://manager-petshop.onrender.com/api/Products', {
+      const response = await fetch(`${API_BASE_URL}/api/Products`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
@@ -62,7 +63,7 @@ export default function Products() {
     try {
       const token = localStorage.getItem('petshop_token');
 
-      const response = await fetch(`https://manager-petshop.onrender.com/api/Products/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/Products/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -95,8 +96,8 @@ export default function Products() {
     try {
       const token = localStorage.getItem('petshop_token');
       const url = isEditing
-        ? `https://manager-petshop.onrender.com/api/Products/${editingId}`
-        : 'https://manager-petshop.onrender.com/api/Products';
+        ? `${API_BASE_URL}/api/Products/${editingId}`
+        : `${API_BASE_URL}/api/Products`;
 
       const response = await fetch(url, {
         method: isEditing ? 'PUT' : 'POST',

@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../config/api';
 
 export default function Home() {
   const role = localStorage.getItem('petshop_role');
   const [totalClients, setTotalClients] = useState(0);
-  const roleScreen = role === 'Admin' ? 'Administrador' : 'Funcionário';
+  const roleScreen = role === 'Admin' ? 'Administrador' : role === 'Funcionario' ? 'Funcionário' : 'Super Administrador';
 
   useEffect(() => {
     fetchDashboardData();
@@ -14,7 +15,7 @@ export default function Home() {
       const token = localStorage.getItem('petshop_token');
       
       
-      const response = await fetch('https://manager-petshop.onrender.com/api/Clients', {
+      const response = await fetch(`${API_BASE_URL}/api/Clients`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       

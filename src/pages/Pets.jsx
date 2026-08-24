@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../config/api';
 
 export default function Pets() {
   const [pets, setPets] = useState([]);
@@ -23,7 +24,7 @@ export default function Pets() {
   const fetchPets = async () => {
     try {
       const token = localStorage.getItem('petshop_token');
-      const response = await fetch('https://manager-petshop.onrender.com/api/Pets', {
+      const response = await fetch(`${API_BASE_URL}/api/Pets`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (response.ok) {
@@ -39,7 +40,7 @@ export default function Pets() {
   const fetchClients = async () => {
     try {
       const token = localStorage.getItem('petshop_token');
-      const response = await fetch('https://manager-petshop.onrender.com/api/Clients', {
+      const response = await fetch(`${API_BASE_URL}/api/Clients`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (response.ok) {
@@ -67,7 +68,7 @@ export default function Pets() {
       const token = localStorage.getItem('petshop_token');
       
       
-      const response = await fetch(`https://manager-petshop.onrender.com/api/clients/${clientId}/pets`, {
+      const response = await fetch(`${API_BASE_URL}/api/clients/${clientId}/pets`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -104,7 +105,7 @@ export default function Pets() {
 
     try {
       const token = localStorage.getItem('petshop_token');
-      const response = await fetch(`https://manager-petshop.onrender.com/api/Pets/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/Pets/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });

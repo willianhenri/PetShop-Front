@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { API_BASE_URL } from '../config/api';
 
 export default function Login() {
   const [username, setUsername] = useState('');
@@ -14,7 +15,7 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const response = await fetch('https://manager-petshop.onrender.com/api/Auth/login', {
+      const response = await fetch(`${API_BASE_URL}/api/Auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         

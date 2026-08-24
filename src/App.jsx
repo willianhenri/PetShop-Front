@@ -7,7 +7,8 @@ import Clients from './pages/Clients';
 import Pets from './pages/Pets';
 import Users from './pages/Users'; 
 import Products from './pages/Products'; 
-import Service from './pages/Service'; 
+import Service from './pages/Services'; 
+import Appointment from './pages/Appointment';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import DashboardLayout from './components/DashboardLayout';
@@ -83,6 +84,14 @@ function App() {
           <ProtectedRoute>
             <DashboardLayout>
               <Products />
+            </DashboardLayout>
+          </ProtectedRoute>
+        } />
+
+        <Route path="/agendamentos" element={
+          <ProtectedRoute>
+            <DashboardLayout>
+              <Appointment />
             </DashboardLayout>
           </ProtectedRoute>
         } />

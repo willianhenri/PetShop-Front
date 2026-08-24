@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE_URL } from '../config/api';
 
 export default function Register() {
   const [fullName, setFullName] = useState('');
@@ -24,7 +25,7 @@ export default function Register() {
     try {
       const token = localStorage.getItem('petshop_token');
 
-      const response = await fetch('https://manager-petshop.onrender.com/api/Auth/register', {
+      const response = await fetch(`${API_BASE_URL}/api/Auth/register`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../config/api';
 
 export default function Services() {
   const [services, setServices] = useState([]);
@@ -20,7 +21,7 @@ export default function Services() {
   const fetchServices = async () => {
     try {
       const token = localStorage.getItem('petshop_token');
-      const response = await fetch('https://manager-petshop.onrender.com/api/Services', {
+      const response = await fetch(`${API_BASE_URL}/api/Services`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
@@ -62,7 +63,7 @@ export default function Services() {
     try {
       const token = localStorage.getItem('petshop_token');
 
-      const response = await fetch(`https://manager-petshop.onrender.com/api/Services/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/Services/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -95,8 +96,8 @@ export default function Services() {
     try {
       const token = localStorage.getItem('petshop_token');
       const url = isEditing
-        ? `https://manager-petshop.onrender.com/api/Services/${editingId}`
-        : 'https://manager-petshop.onrender.com/api/Services';
+        ? `${API_BASE_URL}/api/Services/${editingId}`
+        : `${API_BASE_URL}/api/Services`;
 
       const response = await fetch(url, {
         method: isEditing ? 'PUT' : 'POST',

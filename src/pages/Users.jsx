@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../config/api';
 
 export default function Users() {
   const [users, setUsers] = useState([]);
@@ -12,7 +13,7 @@ export default function Users() {
   const fetchUsers = async () => {
     try {
       const token = localStorage.getItem('petshop_token');
-      const response = await fetch('https://manager-petshop.onrender.com/api/Auth', {
+      const response = await fetch(`${API_BASE_URL}/api/Auth`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       
@@ -38,7 +39,7 @@ export default function Users() {
       setSuccess('');
       const token = localStorage.getItem('petshop_token');
       
-      const response = await fetch(`https://manager-petshop.onrender.com/api/Auth/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/Auth/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });

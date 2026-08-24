@@ -32,7 +32,7 @@ export default function Sidebar() {
         <Link to="/pets" style={linkStyle}> Pets</Link>
         
        
-        <Link to="/agenda" style={linkStyle}> Agenda</Link>
+        <Link to="/agendamentos" style={linkStyle}> Agenda</Link>
         <Link to="/servicos" style={linkStyle}> Serviços</Link>
         <Link to="/produtos" style={linkStyle}> Produtos</Link>
         
