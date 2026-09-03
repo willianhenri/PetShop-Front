@@ -1,111 +1,250 @@
-:root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
-
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
-
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-
-  @media (max-width: 1024px) {
-    font-size: 16px;
-  }
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
-
-  #social .button-icon {
-    filter: invert(1) brightness(2);
-  }
-}
-
-body {
-  margin: 0;
-}
-
-#root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
+* {
   box-sizing: border-box;
 }
 
-h1,
-h2 {
-  font-family: var(--heading);
-  font-weight: 500;
-  color: var(--text-h);
-}
-
-h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
-  }
-}
-h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
-  }
-}
-p {
+html,
+body,
+#root {
+  min-width: 320px;
+  min-height: 100%;
   margin: 0;
 }
 
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  color: #1f2937;
 }
 
-code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button:not(:disabled) {
+  cursor: pointer;
+}
+
+.dashboard-layout {
+  min-height: 100vh;
+  background: #f4f6f9;
+}
+
+.sidebar {
+  position: fixed;
+  z-index: 30;
+  top: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  width: 250px;
+  height: 100vh;
+  background: #2c3e50;
+  color: #fff;
+}
+
+.sidebar-close,
+.mobile-header,
+.menu-overlay {
+  display: none;
+}
+
+.dashboard-content {
+  width: auto;
+  min-height: 100vh;
+  margin-left: 250px;
+  padding: 30px;
+  overflow-x: hidden;
+}
+
+.page-title {
+  margin-top: 0;
+}
+
+.page-card {
+  max-width: 100%;
+}
+
+.table-scroll {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table-scroll table {
+  min-width: 600px;
+}
+
+.dashboard-content h1,
+.dashboard-content h2,
+.dashboard-content h3,
+.dashboard-content p {
+  overflow-wrap: anywhere;
+}
+
+.dashboard-content table {
+  max-width: 100%;
+}
+
+.auth-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100dvh;
+  padding: 24px;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 400px;
+}
+
+.forgot-password-page {
+  width: 100%;
+  min-height: 100dvh;
+  margin: 0;
+  padding: 32px 20px;
+  text-align: center;
+}
+
+.forgot-password-form,
+.forgot-password-input {
+  width: min(100%, 300px) !important;
+}
+
+@media (max-width: 767px) {
+  .dashboard-layout {
+    min-height: 100dvh;
+  }
+
+  .mobile-header {
+    position: sticky;
+    z-index: 20;
+    top: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    height: 60px;
+    padding: 0 16px;
+    background: #1a252f;
+    color: #fff;
+    font-size: 18px;
+    font-weight: 700;
+  }
+
+  .menu-toggle,
+  .sidebar-close {
+    border: 0;
+    color: #fff;
+    background: transparent;
+    font-size: 28px;
+    line-height: 1;
+  }
+
+  .sidebar-close {
+    display: block;
+    position: absolute;
+    top: 15px;
+    right: 14px;
+  }
+
+  .sidebar {
+    width: min(82vw, 300px);
+    transform: translateX(-100%);
+    transition: transform 200ms ease;
+    box-shadow: 8px 0 24px rgba(0, 0, 0, 0.22);
+  }
+
+  .sidebar--open {
+    transform: translateX(0);
+  }
+
+  .menu-overlay {
+    position: fixed;
+    z-index: 25;
+    inset: 0;
+    display: block;
+    width: 100%;
+    border: 0;
+    background: rgba(0, 0, 0, 0.45);
+  }
+
+  .dashboard-content {
+    min-width: 0;
+    min-height: calc(100dvh - 60px);
+    margin-left: 0;
+    padding: 20px 16px;
+  }
+
+  .dashboard-content h1 {
+    font-size: 28px;
+  }
+
+  .dashboard-content h2 {
+    font-size: 23px;
+  }
+
+  .dashboard-content .page-card {
+    padding: 16px !important;
+  }
+
+  .dashboard-content div[style*="background-color: white"] {
+    max-width: 100%;
+    padding: 16px !important;
+  }
+
+  .dashboard-content form > div[style*="flex: 1 1 200px"] {
+    flex-basis: 100% !important;
+  }
+
+  .dashboard-content form > div[style*="display: flex"] {
+    flex-wrap: wrap;
+  }
+
+  .dashboard-content form > div[style*="display: flex"] > button {
+    flex: 1 1 150px;
+  }
+
+  .dashboard-content table {
+    display: block;
+    min-width: 600px;
+    overflow-x: auto;
+  }
+
+  .dashboard-content table th,
+  .dashboard-content table td {
+    white-space: nowrap;
+  }
+
+  .auth-page {
+    padding: 16px;
+  }
+
+  .auth-card {
+    padding: 22px !important;
+  }
+
+  .forgot-password-page {
+    padding: 28px 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-content {
+    padding: 16px 12px;
+  }
+
+  .dashboard-content h1 {
+    font-size: 25px;
+  }
+
+  .dashboard-content h2 {
+    font-size: 21px;
+  }
+
+  .dashboard-content form button,
+  .auth-page button {
+    min-height: 42px;
+  }
 }

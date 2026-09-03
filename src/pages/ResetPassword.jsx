@@ -76,8 +76,8 @@ export default function ResetPassword() {
   };
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', fontFamily: 'sans-serif' }}>
-      <div style={{ padding: '30px', border: '1px solid #ccc', borderRadius: '8px', width: '100%', maxWidth: '400px' }}>
+    <div className="auth-page" style={{ fontFamily: 'sans-serif' }}>
+      <div className="auth-card" style={{ padding: '30px', border: '1px solid #ccc', borderRadius: '8px', width: '100%', maxWidth: '400px' }}>
         <h2>Redefinir Senha</h2>
         <p style={{ fontSize: '14px', color: '#666' }}>Digite sua nova senha abaixo para acessar o MeuPetShop.</p>
 

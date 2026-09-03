@@ -57,9 +57,9 @@ export default function Register() {
   };
 
   return (
-    <div style={{ padding: '20px', fontFamily: 'Arial' }}>
+    <div className="register-page" style={{ padding: '20px', fontFamily: 'Arial' }}>
       <button onClick={() => navigate('/home')} style={{ marginBottom: '20px', padding: '5px 10px' }}>← Voltar ao Painel</button>
-      <div style={{ border: '1px solid #ccc', padding: '30px', borderRadius: '8px', width: '400px', backgroundColor: 'white' }}>
+      <div className="register-card" style={{ border: '1px solid #ccc', padding: '30px', borderRadius: '8px', width: '400px', maxWidth: '100%', backgroundColor: 'white' }}>
         <h2>Cadastrar Novo Colaborador</h2>
         {error && <p style={{ color: 'red' }}>{error}</p>}
         {success && <p style={{ color: 'green' }}>{success}</p>}

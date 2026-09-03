@@ -1,12 +1,12 @@
-import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
-export default function Sidebar() {
+export default function Sidebar({ isOpen, onClose }) {
   const navigate = useNavigate();
   const role = localStorage.getItem('petshop_role');
 
   const handleLogout = () => {
     localStorage.clear();
+    onClose();
     navigate('/');
   };
 
@@ -20,30 +20,31 @@ export default function Sidebar() {
   };
 
   return (
-    <div style={{ width: '250px', backgroundColor: '#2c3e50', color: 'white', display: 'flex', flexDirection: 'column', height: '100vh', position: 'fixed', left: 0, top: 0 }}>
+    <aside className={`sidebar ${isOpen ? 'sidebar--open' : ''}`}>
       <div style={{ padding: '20px', backgroundColor: '#1a252f', textAlign: 'center', fontSize: '20px', fontWeight: 'bold' }}>
         🐾 MeuPetShop
+        <button type="button" className="sidebar-close" onClick={onClose} aria-label="Fechar menu">×</button>
       </div>
 
       
       <nav style={{ flex: 1, marginTop: '10px' }}>
-        <Link to="/home" style={linkStyle}> Home</Link>
-        <Link to="/clientes" style={linkStyle}> Clientes</Link>
-        <Link to="/pets" style={linkStyle}> Pets</Link>
+        <Link to="/home" onClick={onClose} style={linkStyle}> Home</Link>
+        <Link to="/clientes" onClick={onClose} style={linkStyle}> Clientes</Link>
+        <Link to="/pets" onClick={onClose} style={linkStyle}> Pets</Link>
         
        
-        <Link to="/agendamentos" style={linkStyle}> Agenda</Link>
-        <Link to="/servicos" style={linkStyle}> Serviços</Link>
-        <Link to="/produtos" style={linkStyle}> Produtos</Link>
+        <Link to="/agendamentos" onClick={onClose} style={linkStyle}> Agenda</Link>
+        <Link to="/servicos" onClick={onClose} style={linkStyle}> Serviços</Link>
+        <Link to="/produtos" onClick={onClose} style={linkStyle}> Produtos</Link>
         
        
         {(role === 'Admin' || role === 'SuperAdmin') && (
-          <Link to="/register" style={{ ...linkStyle, backgroundColor: '#27ae60' }}> Registrar Funcionário</Link>
+          <Link to="/register" onClick={onClose} style={{ ...linkStyle, backgroundColor: '#27ae60' }}> Registrar Funcionário</Link>
         )}
 
         
         {role === 'SuperAdmin' && (
-          <Link to="/usuarios" style={{ ...linkStyle, backgroundColor: '#8e44ad' }}> Gerenciar Equipe</Link>
+          <Link to="/usuarios" onClick={onClose} style={{ ...linkStyle, backgroundColor: '#8e44ad' }}> Gerenciar Equipe</Link>
         )}
       </nav>
 
@@ -52,6 +53,6 @@ export default function Sidebar() {
           Sair do Sistema
         </button>
       </div>
-    </div>
+    </aside>
   );
 }

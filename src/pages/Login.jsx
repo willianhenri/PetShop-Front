@@ -41,7 +41,7 @@ export default function Login() {
   };
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', fontFamily: 'Arial', backgroundColor: '#0a192f' }}>
+    <div className="auth-page" style={{ fontFamily: 'Arial', backgroundColor: '#0a192f' }}>
       <style>{`
         body {
           margin: 0 !important;
@@ -49,7 +49,7 @@ export default function Login() {
           background-color: #0a192f;
         }
       `}</style>
-      <div style={{ border: '1px solid #233554', padding: '30px', borderRadius: '8px', width: '350px', boxShadow: '0 10px 30px rgba(0,0,0,0.5)', backgroundColor: '#112240', color: '#ffffff' }}>
+      <div className="auth-card" style={{ border: '1px solid #233554', padding: '30px', borderRadius: '8px', width: '350px', boxShadow: '0 10px 30px rgba(0,0,0,0.5)', backgroundColor: '#112240', color: '#ffffff' }}>
         <h2 style={{ textAlign: 'center', marginBottom: '20px' }}>Acessar MeuPetShop</h2>
         {error && <p style={{ color: '#ff6b6b', fontSize: '14px' }}>{error}</p>}
         

@@ -41,17 +41,18 @@ export default function ForgotPassword() {
   };
 
   return (
-    <main style={mainStyle}>
+    <main className="forgot-password-page" style={mainStyle}>
       <h2>Esqueci minha senha</h2>
       <p>Digite seu e-mail cadastrado para solicitar a redefinição de senha.</p>
 
-      <form onSubmit={handleSubmit} style={{ textAlign: 'center', marginTop: '20px' }}>
+      <form className="forgot-password-form" onSubmit={handleSubmit} style={{ textAlign: 'center', marginTop: '20px' }}>
         <input
           type="email"
           placeholder="Digite seu e-mail"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
+          className="forgot-password-input"
           style={{ padding: '10px', width: '300px', marginBottom: '15px', borderRadius: '5px', border: '1px solid #ccc' }}
         />
         <br />
