@@ -175,6 +175,7 @@ export default function Pets() {
       {/* Tabela de Pets */}
       <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
         <h3>Pets Cadastrados</h3>
+        <div className="table-scroll">
         <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '10px' }}>
           <thead>
             <tr style={{ backgroundColor: '#f4f6f9', borderBottom: '2px solid #ddd' }}>
@@ -206,6 +207,7 @@ export default function Pets() {
             )}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   );

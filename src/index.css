@@ -70,6 +70,7 @@ button:not(:disabled) {
   width: 100%;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior-inline: contain;
 }
 
 .table-scroll table {
@@ -204,12 +205,6 @@ button:not(:disabled) {
 
   .dashboard-content form > div[style*="display: flex"] > button {
     flex: 1 1 150px;
-  }
-
-  .dashboard-content table {
-    display: block;
-    min-width: 600px;
-    overflow-x: auto;
   }
 
   .dashboard-content table th,

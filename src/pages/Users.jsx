@@ -65,6 +65,7 @@ export default function Users() {
 
       <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
         <h3>Membros da Equipe</h3>
+        <div className="table-scroll">
         <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '10px' }}>
           <thead>
             <tr style={{ backgroundColor: '#2c3e50', color: 'white' }}>
@@ -105,6 +106,7 @@ export default function Users() {
             )}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   );
