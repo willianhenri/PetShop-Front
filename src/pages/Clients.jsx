@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { API_BASE_URL } from '../config/api';
 
 export default function Clients() {
@@ -13,10 +13,6 @@ export default function Clients() {
   const [success, setSuccess] = useState('');
 
   
-  useEffect(() => {
-    fetchClients();
-  }, []);
-
   const fetchClients = async () => {
     try {
       const token = localStorage.getItem('petshop_token');
@@ -38,6 +34,10 @@ export default function Clients() {
       setClients([]); 
     }
   };
+
+  useEffect(() => {
+    void Promise.resolve().then(fetchClients);
+  }, []);
 
 
  const handleDeleteClient = async (id) => {
@@ -159,11 +159,12 @@ export default function Clients() {
               <th style={{ padding: '12px', textAlign: 'left' }}>Telefone</th>
               <th style={{ padding: '12px', textAlign: 'left' }}>E-mail</th>
               <th style={{ padding: '12px', textAlign: 'left' }}>Endereço</th>
+              <th style={{ padding: '12px', textAlign: 'center' }}>Ações</th>
             </tr>
           </thead>
         <tbody>
           {clients.length === 0 ? (
-            <tr><td colSpan="4" style={{ padding: '15px', textAlign: 'center' }}>Nenhum cliente cadastrado ainda.</td></tr>
+            <tr><td colSpan="5" style={{ padding: '15px', textAlign: 'center' }}>Nenhum cliente cadastrado ainda.</td></tr>
           ) : (
             clients.map(client => (
               <tr key={client.id} style={{ borderBottom: '1px solid #eee' }}>

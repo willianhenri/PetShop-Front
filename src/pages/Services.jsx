@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { API_BASE_URL } from '../config/api';
 
 export default function Services() {
@@ -13,10 +13,6 @@ export default function Services() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-
-  useEffect(() => {
-    fetchServices();
-  }, []);
 
   const fetchServices = async () => {
     try {
@@ -37,6 +33,10 @@ export default function Services() {
       setServices([]);
     }
   };
+
+  useEffect(() => {
+    void Promise.resolve().then(fetchServices);
+  }, []);
 
   const resetForm = () => {
     setName('');

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { API_BASE_URL } from '../config/api';
 
 const STATUS_OPTIONS = [
@@ -45,19 +45,12 @@ export default function Appointments() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  useEffect(() => {
-    fetchAppointments();
-    fetchClients();
-    fetchPets();
-    fetchServices();
-  }, []);
-
-  const authHeaders = () => {
+  const authHeaders = useCallback(() => {
     const token = localStorage.getItem('petshop_token');
     return { 'Authorization': `Bearer ${token}` };
-  };
+  }, []);
 
-  const fetchAppointments = async () => {
+  const fetchAppointments = useCallback(async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/appointments`, {
         headers: authHeaders()
@@ -74,9 +67,9 @@ export default function Appointments() {
       console.error("Erro ao buscar agendamentos:", err);
       setAppointments([]);
     }
-  };
+  }, [authHeaders]);
 
-  const fetchClients = async () => {
+  const fetchClients = useCallback(async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/Clients`, {
         headers: authHeaders()
@@ -88,9 +81,9 @@ export default function Appointments() {
     } catch (err) {
       console.error("Erro ao buscar clientes:", err);
     }
-  };
+  }, [authHeaders]);
 
-  const fetchPets = async () => {
+  const fetchPets = useCallback(async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/pets`, {
         headers: authHeaders()
@@ -102,9 +95,9 @@ export default function Appointments() {
     } catch (err) {
       console.error("Erro ao buscar pets:", err);
     }
-  };
+  }, [authHeaders]);
 
-  const fetchServices = async () => {
+  const fetchServices = useCallback(async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/Services`, {
         headers: authHeaders()
@@ -116,7 +109,7 @@ export default function Appointments() {
     } catch (err) {
       console.error("Erro ao buscar serviços:", err);
     }
-  };
+  }, [authHeaders]);
 
   const resetForm = () => {
     setClientId('');
@@ -215,6 +208,15 @@ export default function Appointments() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    void Promise.resolve().then(() => {
+      fetchAppointments();
+      fetchClients();
+      fetchPets();
+      fetchServices();
+    });
+  }, [fetchAppointments, fetchClients, fetchPets, fetchServices]);
 
   const petsForSelectedClient = clientId
     ? pets.filter(p => String(p.clientId) === String(clientId))

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { API_BASE_URL } from '../config/api';
 
 export default function ForgotPassword() {
@@ -25,7 +25,7 @@ export default function ForgotPassword() {
         alert('Ocorreu um erro ao tentar enviar o e-mail. Tente novamente mais tarde.');
       }
 
-    } catch (error) {
+    } catch {
       alert('Erro de conexão com o servidor.');
     }
   };

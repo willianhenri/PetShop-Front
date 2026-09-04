@@ -1,14 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { API_BASE_URL } from '../config/api';
 
 export default function Users() {
   const [users, setUsers] = useState([]);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-
-  useEffect(() => {
-    fetchUsers();
-  }, []);
 
   const fetchUsers = async () => {
     try {
@@ -25,10 +21,14 @@ export default function Users() {
       } else {
         setError('Erro ao carregar a lista de equipe.');
       }
-    } catch (err) {
+    } catch {
       setError('Falha na conexão com o servidor.');
     }
   };
+
+  useEffect(() => {
+    void Promise.resolve().then(fetchUsers);
+  }, []);
 
   const handleDeleteUser = async (id, name) => {
     const confirmDelete = window.confirm(`PERIGO: Tem certeza que deseja remover permanentemente o acesso de ${name}?`);

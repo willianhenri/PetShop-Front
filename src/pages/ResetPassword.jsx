@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { API_BASE_URL } from '../config/api';
 
@@ -17,12 +17,7 @@ export default function ResetPassword() {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
- 
-  useEffect(() => {
-    if (!token || !email) {
-      setError('Link de recuperação inválido ou expirado.');
-    }
-  }, [token, email]);
+  const invalidResetLink = !token || !email;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -81,7 +76,7 @@ export default function ResetPassword() {
         <h2>Redefinir Senha</h2>
         <p style={{ fontSize: '14px', color: '#666' }}>Digite sua nova senha abaixo para acessar o MeuPetShop.</p>
 
-        {error && <div style={{ color: 'red', marginBottom: '15px', fontWeight: 'bold' }}>{error}</div>}
+        {(error || invalidResetLink) && <div style={{ color: 'red', marginBottom: '15px', fontWeight: 'bold' }}>{error || 'Link de recuperação inválido ou expirado.'}</div>}
         {message && <div style={{ color: 'green', marginBottom: '15px', fontWeight: 'bold' }}>{message}</div>}
 
         <form onSubmit={handleSubmit}>
@@ -91,7 +86,7 @@ export default function ResetPassword() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              disabled={loading || !token}
+              disabled={loading || invalidResetLink}
               style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
               required
             />
@@ -103,7 +98,7 @@ export default function ResetPassword() {
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              disabled={loading || !token}
+              disabled={loading || invalidResetLink}
               style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
               required
             />
@@ -111,7 +106,7 @@ export default function ResetPassword() {
 
           <button
             type="submit"
-            disabled={loading || !token}
+            disabled={loading || invalidResetLink}
             style={{ width: '100%', padding: '10px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
           >
             {loading ? 'Alterando...' : 'Salvar Nova Senha'}

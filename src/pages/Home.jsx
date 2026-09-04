@@ -1,14 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { API_BASE_URL } from '../config/api';
 
 export default function Home() {
   const role = localStorage.getItem('petshop_role');
   const [totalClients, setTotalClients] = useState(0);
   const roleScreen = role === 'Admin' ? 'Administrador' : role === 'Funcionario' ? 'Funcionário' : 'Super Administrador';
-
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
 
   const fetchDashboardData = async () => {
     try {
@@ -34,6 +30,10 @@ export default function Home() {
       console.error("Erro ao buscar dados do dashboard:", err);
     }
   };
+
+  useEffect(() => {
+    void Promise.resolve().then(fetchDashboardData);
+  }, []);
 
   return (
     <div>

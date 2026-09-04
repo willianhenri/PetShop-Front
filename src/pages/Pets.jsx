@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { API_BASE_URL } from '../config/api';
 
 export default function Pets() {
@@ -16,11 +16,6 @@ export default function Pets() {
   const [success, setSuccess] = useState('');
 
   
-  useEffect(() => {
-    fetchPets();
-    fetchClients();
-  }, []);
-
   const fetchPets = async () => {
     try {
       const token = localStorage.getItem('petshop_token');
@@ -51,6 +46,13 @@ export default function Pets() {
       console.error("Erro ao buscar clientes:", err);
     }
   };
+
+  useEffect(() => {
+    void Promise.resolve().then(() => {
+      fetchPets();
+      fetchClients();
+    });
+  }, []);
 
   const handleCreatePet = async (e) => {
     e.preventDefault();
