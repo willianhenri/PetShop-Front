@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { apiFetch } from '../services/apiFetch';
+import { IMaskInput } from 'react-imask';
 
 export default function Clients() {
   const [clients, setClients] = useState([]);
@@ -63,6 +64,14 @@ export default function Clients() {
 
   const handleCreateClient = async (e) => {
     e.preventDefault();
+    const trimmedName = name.trim();
+    if (!trimmedName) {
+      setError('O nome do cliente não pode estar vazio.');
+      return;
+    }
+    const normalizedAddress = address.trim() || 'Não informado';
+    const normalizedEmail = email.trim().toLowerCase();
+
     setError('');
     setSuccess('');
     setLoading(true);
@@ -72,7 +81,7 @@ export default function Clients() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         
-        body: JSON.stringify({ name, phone, email, address }),
+        body: JSON.stringify({ name: trimmedName, phone, email: normalizedEmail, address: normalizedAddress }),
       });
 
       if (!response.ok) {
@@ -114,11 +123,29 @@ export default function Clients() {
           </div>
           <div style={{ flex: '1 1 200px' }}>
             <label style={{ display: 'block', fontSize: '14px', marginBottom: '5px' }}>Telefone:</label>
-            <input type="text" value={phone} onChange={(e) => setPhone(e.target.value)} required style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }} />
+            <IMaskInput
+              mask="(00) 00000-0000"
+              value={phone}
+              unmask={false}
+              onAccept={(value) => setPhone(value)}
+              placeholder="(00) 00000-0000"
+              type="tel"
+              inputMode="numeric"
+              required
+              style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
+            />
           </div>
           <div style={{ flex: '1 1 200px' }}>
             <label style={{ display: 'block', fontSize: '14px', marginBottom: '5px' }}>E-mail:</label>
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }} />
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="nome@exemplo.com"
+              autoComplete="email"
+              required
+              style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
+            />
           </div>
           <div style={{ flex: '1 1 200px' }}>
             <label style={{ display: 'block', fontSize: '14px', marginBottom: '5px' }}>Endereço:</label>
