@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { API_BASE_URL } from '../config/api';
+import { apiFetch } from '../services/apiFetch';
 
 export default function Register() {
   const [fullName, setFullName] = useState('');
@@ -23,14 +23,9 @@ export default function Register() {
     setLoading(true);
 
     try {
-      const token = localStorage.getItem('petshop_token');
-
-      const response = await fetch(`${API_BASE_URL}/api/Auth/register`, {
+      const response = await apiFetch('/api/Auth/register', {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}` 
-        },
+        headers: { 'Content-Type': 'application/json' },
  
         body: JSON.stringify({ username, email, password, fullName, role }),
       });

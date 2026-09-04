@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { API_BASE_URL } from '../config/api';
+import { apiFetch } from '../services/apiFetch';
 
 export default function Home() {
   const role = localStorage.getItem('petshop_role');
@@ -8,12 +8,7 @@ export default function Home() {
 
   const fetchDashboardData = async () => {
     try {
-      const token = localStorage.getItem('petshop_token');
-      
-      
-      const response = await fetch(`${API_BASE_URL}/api/Clients`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const response = await apiFetch('/api/Clients');
       
       if (response.ok) {
         const responseData = await response.json();

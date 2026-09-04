@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { API_BASE_URL } from '../config/api';
+import { apiFetch } from '../services/apiFetch';
 
 export default function Users() {
   const [users, setUsers] = useState([]);
@@ -8,10 +8,7 @@ export default function Users() {
 
   const fetchUsers = async () => {
     try {
-      const token = localStorage.getItem('petshop_token');
-      const response = await fetch(`${API_BASE_URL}/api/Auth`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const response = await apiFetch('/api/Auth');
       
       if (response.ok) {
         const responseData = await response.json();
@@ -37,12 +34,7 @@ export default function Users() {
     try {
       setError('');
       setSuccess('');
-      const token = localStorage.getItem('petshop_token');
-      
-      const response = await fetch(`${API_BASE_URL}/api/Auth/${id}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const response = await apiFetch(`/api/Auth/${id}`, { method: 'DELETE' });
 
       if (!response.ok) {
         const errorData = await response.json();

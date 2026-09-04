@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { API_BASE_URL } from '../config/api';
+import { apiFetch } from '../services/apiFetch';
 
 export default function Pets() {
   const [pets, setPets] = useState([]);
@@ -18,10 +18,7 @@ export default function Pets() {
   
   const fetchPets = async () => {
     try {
-      const token = localStorage.getItem('petshop_token');
-      const response = await fetch(`${API_BASE_URL}/api/Pets`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const response = await apiFetch('/api/Pets');
       if (response.ok) {
         const responseData = await response.json();
         
@@ -34,10 +31,7 @@ export default function Pets() {
 
   const fetchClients = async () => {
     try {
-      const token = localStorage.getItem('petshop_token');
-      const response = await fetch(`${API_BASE_URL}/api/Clients`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const response = await apiFetch('/api/Clients');
       if (response.ok) {
         const responseData = await response.json();
         setClients(Array.isArray(responseData.data) ? responseData.data : []);
@@ -67,15 +61,9 @@ export default function Pets() {
     setLoading(true);
 
     try {
-      const token = localStorage.getItem('petshop_token');
-      
-      
-      const response = await fetch(`${API_BASE_URL}/api/clients/${clientId}/pets`, {
+      const response = await apiFetch(`/api/clients/${clientId}/pets`, {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, breed, specie }),
       });
 
@@ -106,11 +94,7 @@ export default function Pets() {
     if (!confirmDelete) return;
 
     try {
-      const token = localStorage.getItem('petshop_token');
-      const response = await fetch(`${API_BASE_URL}/api/Pets/${id}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const response = await apiFetch(`/api/Pets/${id}`, { method: 'DELETE' });
 
       if (!response.ok) {
         throw new Error('Erro ao excluir o pet.');

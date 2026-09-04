@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { API_BASE_URL } from '../config/api';
+import { apiFetch } from '../services/apiFetch';
 
 export default function Clients() {
   const [clients, setClients] = useState([]);
@@ -15,10 +15,7 @@ export default function Clients() {
   
   const fetchClients = async () => {
     try {
-      const token = localStorage.getItem('petshop_token');
-      const response = await fetch(`${API_BASE_URL}/api/Clients`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const response = await apiFetch('/api/Clients');
       
      
       if (response.ok) {
@@ -46,15 +43,7 @@ export default function Clients() {
     if (!confirmDelete) return;
 
     try {
-      const token = localStorage.getItem('petshop_token');
-      
-      
-      const response = await fetch(`${API_BASE_URL}/api/Clients/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      const response = await apiFetch(`/api/Clients/${id}`, { method: 'DELETE' });
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -79,13 +68,9 @@ export default function Clients() {
     setLoading(true);
 
     try {
-      const token = localStorage.getItem('petshop_token');
-      const response = await fetch(`${API_BASE_URL}/api/Clients`, {
+      const response = await apiFetch('/api/Clients', {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
+        headers: { 'Content-Type': 'application/json' },
         
         body: JSON.stringify({ name, phone, email, address }),
       });

@@ -1,5 +1,5 @@
 import { useCallback, useState, useEffect } from 'react';
-import { API_BASE_URL } from '../config/api';
+import { apiFetch } from '../services/apiFetch';
 
 const STATUS_OPTIONS = [
   { value: 0, label: 'Agendado' },
@@ -45,16 +45,9 @@ export default function Appointments() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const authHeaders = useCallback(() => {
-    const token = localStorage.getItem('petshop_token');
-    return { 'Authorization': `Bearer ${token}` };
-  }, []);
-
   const fetchAppointments = useCallback(async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/appointments`, {
-        headers: authHeaders()
-      });
+      const response = await apiFetch('/api/appointments');
 
       if (response.ok) {
         const data = await response.json();
@@ -67,13 +60,11 @@ export default function Appointments() {
       console.error("Erro ao buscar agendamentos:", err);
       setAppointments([]);
     }
-  }, [authHeaders]);
+  }, []);
 
   const fetchClients = useCallback(async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/Clients`, {
-        headers: authHeaders()
-      });
+      const response = await apiFetch('/api/Clients');
       if (response.ok) {
         const data = await response.json();
         setClients(Array.isArray(data.data) ? data.data : []);
@@ -81,13 +72,11 @@ export default function Appointments() {
     } catch (err) {
       console.error("Erro ao buscar clientes:", err);
     }
-  }, [authHeaders]);
+  }, []);
 
   const fetchPets = useCallback(async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/pets`, {
-        headers: authHeaders()
-      });
+      const response = await apiFetch('/api/pets');
       if (response.ok) {
         const data = await response.json();
         setPets(Array.isArray(data.data) ? data.data : []);
@@ -95,13 +84,11 @@ export default function Appointments() {
     } catch (err) {
       console.error("Erro ao buscar pets:", err);
     }
-  }, [authHeaders]);
+  }, []);
 
   const fetchServices = useCallback(async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/Services`, {
-        headers: authHeaders()
-      });
+      const response = await apiFetch('/api/Services');
       if (response.ok) {
         const data = await response.json();
         setServices(Array.isArray(data.data) ? data.data : []);
@@ -109,7 +96,7 @@ export default function Appointments() {
     } catch (err) {
       console.error("Erro ao buscar serviços:", err);
     }
-  }, [authHeaders]);
+  }, []);
 
   const resetForm = () => {
     setClientId('');
@@ -138,10 +125,7 @@ export default function Appointments() {
     if (!confirmCancel) return;
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/appointments/${id}/cancel`, {
-        method: 'POST',
-        headers: authHeaders()
-      });
+      const response = await apiFetch(`/api/appointments/${id}/cancel`, { method: 'POST' });
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -167,9 +151,7 @@ export default function Appointments() {
     const isEditing = editingId !== null;
 
     try {
-      const url = isEditing
-        ? `${API_BASE_URL}/api/appointments/${editingId}`
-        : `${API_BASE_URL}/api/appointments`;
+      const path = isEditing ? `/api/appointments/${editingId}` : '/api/appointments';
 
       const body = isEditing
         ? {
@@ -185,12 +167,9 @@ export default function Appointments() {
             notes
           };
 
-      const response = await fetch(url, {
+      const response = await apiFetch(path, {
         method: isEditing ? 'PUT' : 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...authHeaders()
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
 

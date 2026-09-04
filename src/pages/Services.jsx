@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { API_BASE_URL } from '../config/api';
+import { apiFetch } from '../services/apiFetch';
 
 export default function Services() {
   const [services, setServices] = useState([]);
@@ -16,10 +16,7 @@ export default function Services() {
 
   const fetchServices = async () => {
     try {
-      const token = localStorage.getItem('petshop_token');
-      const response = await fetch(`${API_BASE_URL}/api/Services`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const response = await apiFetch('/api/Services');
 
       if (response.ok) {
         const data = await response.json();
@@ -61,14 +58,7 @@ export default function Services() {
     if (!confirmDelete) return;
 
     try {
-      const token = localStorage.getItem('petshop_token');
-
-      const response = await fetch(`${API_BASE_URL}/api/Services/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      const response = await apiFetch(`/api/Services/${id}`, { method: 'DELETE' });
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -94,17 +84,11 @@ export default function Services() {
     const isEditing = editingId !== null;
 
     try {
-      const token = localStorage.getItem('petshop_token');
-      const url = isEditing
-        ? `${API_BASE_URL}/api/Services/${editingId}`
-        : `${API_BASE_URL}/api/Services`;
+      const path = isEditing ? `/api/Services/${editingId}` : '/api/Services';
 
-      const response = await fetch(url, {
+      const response = await apiFetch(path, {
         method: isEditing ? 'PUT' : 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name,
           description,
