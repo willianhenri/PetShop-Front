@@ -22,7 +22,13 @@ export default function Sidebar({ isOpen, onClose }) {
   return (
     <aside className={`sidebar ${isOpen ? 'sidebar--open' : ''}`}>
       <div style={{ padding: '20px', backgroundColor: '#1a252f', textAlign: 'center', fontSize: '20px', fontWeight: 'bold' }}>
-        🐾 MeuPetShop
+        <Link
+          to="/home"
+          onClick={onClose}
+          style={{ color: 'white', textDecoration: 'none' }}
+        >
+          🐾 MeuPetShop
+        </Link>
         <button type="button" className="sidebar-close" onClick={onClose} aria-label="Fechar menu">×</button>
       </div>
 
