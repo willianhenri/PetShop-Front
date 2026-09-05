@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { apiFetch } from '../services/apiFetch';
+import { apiFetch, getApiErrorMessage } from '../services/apiFetch';
 
 export default function Services() {
   const [services, setServices] = useState([]);
@@ -61,8 +61,7 @@ export default function Services() {
       const response = await apiFetch(`/api/Services/${id}`, { method: 'DELETE' });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || 'Erro ao excluir o serviço.');
+        throw new Error(await getApiErrorMessage(response, 'Erro ao excluir o serviço.'));
       }
 
       setSuccess('Serviço excluído com sucesso!');
@@ -98,8 +97,7 @@ export default function Services() {
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || `Erro ao ${isEditing ? 'atualizar' : 'cadastrar'} serviço.`);
+        throw new Error(await getApiErrorMessage(response, `Erro ao ${isEditing ? 'atualizar' : 'cadastrar'} serviço.`));
       }
 
       setSuccess(`Serviço ${isEditing ? 'atualizado' : 'cadastrado'} com sucesso!`);

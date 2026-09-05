@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { API_BASE_URL } from '../config/api';
+import { getApiErrorMessage } from '../services/apiFetch';
 
 export default function ResetPassword() {
   const [searchParams] = useSearchParams();
@@ -48,13 +49,8 @@ export default function ResetPassword() {
           newPassword: password,
         }),
       });
-
-
-      const responseText = await response.text();
-
       if (!response.ok) {
-        
-        throw new Error(responseText || 'Erro ao redefinir a senha.');
+        throw new Error(await getApiErrorMessage(response, 'Erro ao redefinir a senha.'));
       }
 
       setMessage('Senha redefinida com sucesso! Redirecionando para o login...');

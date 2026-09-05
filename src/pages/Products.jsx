@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { apiFetch } from '../services/apiFetch';
+import { apiFetch, getApiErrorMessage } from '../services/apiFetch';
 
 export default function Products() {
   const [products, setProducts] = useState([]);
@@ -61,8 +61,7 @@ export default function Products() {
       const response = await apiFetch(`/api/Products/${id}`, { method: 'DELETE' });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || 'Erro ao excluir o produto.');
+        throw new Error(await getApiErrorMessage(response, 'Erro ao excluir o produto.'));
       }
 
       setSuccess('Produto excluído com sucesso!');
@@ -98,8 +97,7 @@ export default function Products() {
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || `Erro ao ${isEditing ? 'atualizar' : 'cadastrar'} produto.`);
+        throw new Error(await getApiErrorMessage(response, `Erro ao ${isEditing ? 'atualizar' : 'cadastrar'} produto.`));
       }
 
       setSuccess(`Produto ${isEditing ? 'atualizado' : 'cadastrado'} com sucesso!`);

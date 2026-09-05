@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { apiFetch } from '../services/apiFetch';
+import { apiFetch, getApiErrorMessage } from '../services/apiFetch';
 
 export default function Users() {
   const [users, setUsers] = useState([]);
@@ -37,8 +37,7 @@ export default function Users() {
       const response = await apiFetch(`/api/Auth/${id}`, { method: 'DELETE' });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Erro ao remover usuário.');
+        throw new Error(await getApiErrorMessage(response, 'Erro ao remover usuário.'));
       }
 
       setSuccess('Colaborador removido com sucesso!');

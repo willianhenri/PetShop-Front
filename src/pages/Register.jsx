@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { apiFetch } from '../services/apiFetch';
+import { apiFetch, getApiErrorMessage } from '../services/apiFetch';
 
 export default function Register() {
   const [fullName, setFullName] = useState('');
@@ -31,8 +31,7 @@ export default function Register() {
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || 'Erro ao registrar usuário.');
+        throw new Error(await getApiErrorMessage(response, 'Erro ao registrar usuário.'));
       }
 
       setSuccess('Novo usuário cadastrado com sucesso!');

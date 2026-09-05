@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { apiFetch } from '../services/apiFetch';
+import { apiFetch, getApiErrorMessage } from '../services/apiFetch';
 
 export default function Pets() {
   const [pets, setPets] = useState([]);
@@ -68,8 +68,7 @@ export default function Pets() {
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || 'Erro ao cadastrar pet.');
+        throw new Error(await getApiErrorMessage(response, 'Erro ao cadastrar pet.'));
       }
 
       setSuccess('Pet cadastrado com sucesso!');
@@ -97,7 +96,7 @@ export default function Pets() {
       const response = await apiFetch(`/api/Pets/${id}`, { method: 'DELETE' });
 
       if (!response.ok) {
-        throw new Error('Erro ao excluir o pet.');
+        throw new Error(await getApiErrorMessage(response, 'Erro ao excluir o pet.'));
       }
 
       setSuccess('Pet excluído com sucesso!');

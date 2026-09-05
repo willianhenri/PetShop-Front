@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { API_BASE_URL } from '../config/api';
+import { getApiErrorMessage } from '../services/apiFetch';
 
 export default function Login() {
   const [username, setUsername] = useState('');
@@ -23,8 +24,7 @@ export default function Login() {
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || 'Usuário ou senha incorretos.');
+        throw new Error(await getApiErrorMessage(response, 'Usuário ou senha incorretos.'));
       }
 
       const data = await response.json();

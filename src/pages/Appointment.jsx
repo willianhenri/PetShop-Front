@@ -1,5 +1,5 @@
 import { useCallback, useState, useEffect } from 'react';
-import { apiFetch } from '../services/apiFetch';
+import { apiFetch, getApiErrorMessage } from '../services/apiFetch';
 
 const STATUS_OPTIONS = [
   { value: 0, label: 'Agendado' },
@@ -128,8 +128,7 @@ export default function Appointments() {
       const response = await apiFetch(`/api/appointments/${id}/cancel`, { method: 'POST' });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || 'Erro ao cancelar o agendamento.');
+        throw new Error(await getApiErrorMessage(response, 'Erro ao cancelar o agendamento.'));
       }
 
       setSuccess('Agendamento cancelado com sucesso!');
@@ -174,8 +173,7 @@ export default function Appointments() {
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || `Erro ao ${isEditing ? 'atualizar' : 'criar'} agendamento.`);
+        throw new Error(await getApiErrorMessage(response, `Erro ao ${isEditing ? 'atualizar' : 'criar'} agendamento.`));
       }
 
       setSuccess(`Agendamento ${isEditing ? 'atualizado' : 'criado'} com sucesso!`);

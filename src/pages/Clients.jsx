@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { apiFetch } from '../services/apiFetch';
+import { apiFetch, getApiErrorMessage } from '../services/apiFetch';
 import { IMaskInput } from 'react-imask';
 
 export default function Clients() {
@@ -47,8 +47,7 @@ export default function Clients() {
       const response = await apiFetch(`/api/Clients/${id}`, { method: 'DELETE' });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || 'Erro ao excluir o cliente.');
+        throw new Error(await getApiErrorMessage(response, 'Erro ao excluir o cliente.'));
       }
 
       
@@ -85,8 +84,7 @@ export default function Clients() {
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || 'Erro ao cadastrar cliente.');
+        throw new Error(await getApiErrorMessage(response, 'Erro ao cadastrar cliente.'));
       }
 
       setSuccess('Cliente cadastrado com sucesso!');
