@@ -1,35 +1,39 @@
-import { useState, useEffect } from 'react';
-import { apiFetch, getApiErrorMessage } from '../services/apiFetch';
-import { IMaskInput } from 'react-imask';
+import ManagementPage from "../components/ManagementPage";
+import { useSearchParams } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { apiFetch, getApiErrorMessage } from "../services/apiFetch";
+import { IMaskInput } from "react-imask";
 
 export default function Clients() {
+  const [searchParams] = useSearchParams();
+  const [formOpen, setFormOpen] = useState(searchParams.get("new") === "1");
+  const [localQuery, setLocalQuery] = useState(null);
+  const query = localQuery ?? searchParams.get("q") ?? "";
   const [clients, setClients] = useState([]);
-  const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [email, setEmail] = useState('');
-  const [address, setaddress] = useState(''); 
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [address, setaddress] = useState("");
 
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
-  
   const fetchClients = async () => {
     try {
-      const response = await apiFetch('/api/Clients');
-      
-     
+      const response = await apiFetch("/api/Clients");
+
       if (response.ok) {
         const data = await response.json();
-      
+
         setClients(Array.isArray(data.data) ? data.data : []);
       } else {
         console.error("A API retornou um erro:", response.status);
-        setClients([]); 
+        setClients([]);
       }
     } catch (err) {
       console.error("Erro ao buscar clientes:", err);
-      setClients([]); 
+      setClients([]);
     }
   };
 
@@ -37,27 +41,29 @@ export default function Clients() {
     void Promise.resolve().then(fetchClients);
   }, []);
 
-
- const handleDeleteClient = async (id) => {
-    
-    const confirmDelete = window.confirm("Tem certeza que deseja excluir este cliente? Essa ação não pode ser desfeita.");
+  const handleDeleteClient = async (id) => {
+    const confirmDelete = window.confirm(
+      "Tem certeza que deseja excluir este cliente? Essa ação não pode ser desfeita.",
+    );
     if (!confirmDelete) return;
 
     try {
-      const response = await apiFetch(`/api/Clients/${id}`, { method: 'DELETE' });
+      const response = await apiFetch(`/api/Clients/${id}`, {
+        method: "DELETE",
+      });
 
       if (!response.ok) {
-        throw new Error(await getApiErrorMessage(response, 'Erro ao excluir o cliente.'));
+        throw new Error(
+          await getApiErrorMessage(response, "Erro ao excluir o cliente."),
+        );
       }
 
-      
-      setSuccess('Cliente excluído com sucesso!');
-      setError('');
-      fetchClients(); 
-
+      setSuccess("Cliente excluído com sucesso!");
+      setError("");
+      fetchClients();
     } catch (err) {
       setError(err.message);
-      setSuccess('');
+      setSuccess("");
     }
   };
 
@@ -65,37 +71,42 @@ export default function Clients() {
     e.preventDefault();
     const trimmedName = name.trim();
     if (!trimmedName) {
-      setError('O nome do cliente não pode estar vazio.');
+      setError("O nome do cliente não pode estar vazio.");
       return;
     }
-    const normalizedAddress = address.trim() || 'Não informado';
+    const normalizedAddress = address.trim() || "Não informado";
     const normalizedEmail = email.trim().toLowerCase();
 
-    setError('');
-    setSuccess('');
+    setError("");
+    setSuccess("");
     setLoading(true);
 
     try {
-      const response = await apiFetch('/api/Clients', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        
-        body: JSON.stringify({ name: trimmedName, phone, email: normalizedEmail, address: normalizedAddress }),
+      const response = await apiFetch("/api/Clients", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+
+        body: JSON.stringify({
+          name: trimmedName,
+          phone,
+          email: normalizedEmail,
+          address: normalizedAddress,
+        }),
       });
 
       if (!response.ok) {
-        throw new Error(await getApiErrorMessage(response, 'Erro ao cadastrar cliente.'));
+        throw new Error(
+          await getApiErrorMessage(response, "Erro ao cadastrar cliente."),
+        );
       }
 
-      setSuccess('Cliente cadastrado com sucesso!');
-      
-      
-      setName('');
-      setPhone('');
-      setEmail('');
-      setaddress('');
-      
-    
+      setSuccess("Cliente cadastrado com sucesso!");
+
+      setName("");
+      setPhone("");
+      setEmail("");
+      setaddress("");
+
       fetchClients();
     } catch (err) {
       setError(err.message);
@@ -104,24 +115,50 @@ export default function Clients() {
     }
   };
 
-  return (
-    <div>
-      <h2 style={{ borderBottom: '2px solid #ccc', paddingBottom: '10px' }}>👥 Gestão de Clientes</h2>
+  const filtered = clients.filter((item) =>
+    JSON.stringify(item)
+      .toLocaleLowerCase("pt-BR")
+      .includes(query.toLocaleLowerCase("pt-BR")),
+  );
 
-     
-      <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', marginBottom: '30px' }}>
+  return (
+    <ManagementPage
+      kind="clients"
+      formOpen={formOpen}
+      setFormOpen={setFormOpen}
+      query={query}
+      setQuery={setLocalQuery}
+      count={filtered.length}
+    >
+      {error && (
+        <p className="feedback error" role="alert">
+          {error}
+        </p>
+      )}
+      {success && (
+        <p className="feedback success" role="status">
+          {success}
+        </p>
+      )}
+
+      <div className="panel form-panel entity-form">
         <h3>Novo Cliente</h3>
-        {error && <p style={{ color: 'red' }}>{error}</p>}
-        {success && <p style={{ color: 'green' }}>{success}</p>}
-        
-        <form onSubmit={handleCreateClient} style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
-          <div style={{ flex: '1 1 200px' }}>
-            <label style={{ display: 'block', fontSize: '14px', marginBottom: '5px' }}>Nome Completo:</label>
-            <input type="text" value={name} onChange={(e) => setName(e.target.value)} required style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }} />
+
+        <form onSubmit={handleCreateClient} className="form-grid">
+          <div>
+            <label htmlFor="clients-field-1">Nome Completo:</label>
+            <input
+              id="clients-field-1"
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
           </div>
-          <div style={{ flex: '1 1 200px' }}>
-            <label style={{ display: 'block', fontSize: '14px', marginBottom: '5px' }}>Telefone:</label>
+          <div>
+            <label htmlFor="clients-field-2">Telefone:</label>
             <IMaskInput
+              id="clients-field-2"
               mask="(00) 00000-0000"
               value={phone}
               unmask={false}
@@ -130,73 +167,78 @@ export default function Clients() {
               type="tel"
               inputMode="numeric"
               required
-              style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
             />
           </div>
-          <div style={{ flex: '1 1 200px' }}>
-            <label style={{ display: 'block', fontSize: '14px', marginBottom: '5px' }}>E-mail:</label>
+          <div>
+            <label htmlFor="clients-field-3">E-mail:</label>
             <input
+              id="clients-field-3"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="nome@exemplo.com"
               autoComplete="email"
               required
-              style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
             />
           </div>
-          <div style={{ flex: '1 1 200px' }}>
-            <label style={{ display: 'block', fontSize: '14px', marginBottom: '5px' }}>Endereço:</label>
-            <input type="text" value={address} onChange={(e) => setaddress(e.target.value)} required style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }} />
+          <div>
+            <label htmlFor="clients-field-4">Endereço:</label>
+            <input
+              id="clients-field-4"
+              type="text"
+              value={address}
+              onChange={(e) => setaddress(e.target.value)}
+              required
+            />
           </div>
-          
-          <div style={{ flex: '1 1 100%', marginTop: '10px' }}>
-            <button type="submit" disabled={loading} style={{ padding: '10px 20px', backgroundColor: '#3498db', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-              {loading ? 'Salvando...' : '➕ Adicionar Cliente'}
+
+          <div className="form-full">
+            <button type="submit" disabled={loading} className="primary-button">
+              {loading ? "Salvando..." : " Adicionar Cliente"}
             </button>
           </div>
         </form>
       </div>
 
-     
-      <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-        <h3>Clientes Cadastrados</h3>
+      <div className="panel table-panel">
         <div className="table-scroll">
-        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '10px' }}>
-          <thead>
-            <tr style={{ backgroundColor: '#f4f6f9', borderBottom: '2px solid #ddd' }}>
-              <th style={{ padding: '12px', textAlign: 'left' }}>Nome</th>
-              <th style={{ padding: '12px', textAlign: 'left' }}>Telefone</th>
-              <th style={{ padding: '12px', textAlign: 'left' }}>E-mail</th>
-              <th style={{ padding: '12px', textAlign: 'left' }}>Endereço</th>
-              <th style={{ padding: '12px', textAlign: 'center' }}>Ações</th>
-            </tr>
-          </thead>
-        <tbody>
-          {clients.length === 0 ? (
-            <tr><td colSpan="5" style={{ padding: '15px', textAlign: 'center' }}>Nenhum cliente cadastrado ainda.</td></tr>
-          ) : (
-            clients.map(client => (
-              <tr key={client.id} style={{ borderBottom: '1px solid #eee' }}>
-                <td style={{ padding: '12px' }}>{client.name || 'Sem nome'}</td>
-                <td style={{ padding: '12px' }}>{client.phone || 'Sem telefone'}</td>
-                <td style={{ padding: '12px' }}>{client.email || 'Sem e-mail'}</td>
-                <td style={{ padding: '12px' }}>{client.address || 'Não informado'}</td> 
-                <td style={{ padding: '12px', textAlign: 'center' }}>
-                    <button 
-                      onClick={() => handleDeleteClient(client.id)}
-                      style={{ padding: '6px 12px', backgroundColor: '#e74c3c', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}
-                    >
-                      🗑️ Excluir
-                    </button>
-                  </td>
+          <table>
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Telefone</th>
+                <th>E-mail</th>
+                <th>Endereço</th>
+                <th>Ações</th>
               </tr>
-            ))
-          )}
-        </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {filtered.length === 0 ? (
+                <tr>
+                  <td colSpan="5">Nenhum cliente cadastrado ainda.</td>
+                </tr>
+              ) : (
+                filtered.map((client) => (
+                  <tr key={client.id}>
+                    <td>{client.name || "Sem nome"}</td>
+                    <td>{client.phone || "Sem telefone"}</td>
+                    <td>{client.email || "Sem e-mail"}</td>
+                    <td>{client.address || "Não informado"}</td>
+                    <td>
+                      <button
+                        onClick={() => handleDeleteClient(client.id)}
+                        className="danger-button"
+                      >
+                        Excluir
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
-    </div>
+    </ManagementPage>
   );
 }

@@ -1,37 +1,40 @@
-import { useState } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
-import { API_BASE_URL } from '../config/api';
-import { getApiErrorMessage } from '../services/apiFetch';
+import AuthLayout from "../components/AuthLayout";
+import PasswordField from "../components/PasswordField";
+import { LockKeyhole, ArrowLeft, Check } from "lucide-react";
+import { useState } from "react";
+import { useSearchParams, Link } from "react-router-dom";
+import { API_BASE_URL } from "../config/api";
+import { getApiErrorMessage } from "../services/apiFetch";
 
 export default function ResetPassword() {
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
 
-  const tokenBody = searchParams.get('token');
-  const token = tokenBody ? tokenBody.replace(/ /g, '+') : null;
-  
-  const email = searchParams.get('email');
+  const tokenBody = searchParams.get("token");
+  const token = tokenBody ? tokenBody.replace(/ /g, "+") : null;
 
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const email = searchParams.get("email");
+
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
 
   const invalidResetLink = !token || !email;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-    setMessage('');
+    if (invalidResetLink || loading || message) return;
+    setError("");
+    setMessage("");
 
     if (password !== confirmPassword) {
-      setError('As senhas não coincidem.');
+      setError("As senhas não coincidem.");
       return;
     }
 
     if (password.length < 6) {
-      setError('A senha deve ter pelo menos 6 caracteres.');
+      setError("A senha deve ter pelo menos 6 caracteres.");
       return;
     }
 
@@ -39,9 +42,9 @@ export default function ResetPassword() {
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/auth/reset-password`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           email: email,
@@ -50,15 +53,14 @@ export default function ResetPassword() {
         }),
       });
       if (!response.ok) {
-        throw new Error(await getApiErrorMessage(response, 'Erro ao redefinir a senha.'));
+        throw new Error(
+          await getApiErrorMessage(response, "Erro ao redefinir a senha."),
+        );
       }
 
-      setMessage('Senha redefinida com sucesso! Redirecionando para o login...');
-      
-      setTimeout(() => {
-        navigate('/login');
-      }, 3000);
-
+      setMessage(
+        "Senha redefinida com sucesso! Você já pode acessar sua conta.",
+      );
     } catch (err) {
       setError(err.message);
     } finally {
@@ -67,48 +69,67 @@ export default function ResetPassword() {
   };
 
   return (
-    <div className="auth-page" style={{ fontFamily: 'sans-serif' }}>
-      <div className="auth-card" style={{ padding: '30px', border: '1px solid #ccc', borderRadius: '8px', width: '100%', maxWidth: '400px' }}>
-        <h2>Redefinir Senha</h2>
-        <p style={{ fontSize: '14px', color: '#666' }}>Digite sua nova senha abaixo para acessar o MeuPetShop.</p>
-
-        {(error || invalidResetLink) && <div style={{ color: 'red', marginBottom: '15px', fontWeight: 'bold' }}>{error || 'Link de recuperação inválido ou expirado.'}</div>}
-        {message && <div style={{ color: 'green', marginBottom: '15px', fontWeight: 'bold' }}>{message}</div>}
-
-        <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: '15px' }}>
-            <label style={{ display: 'block', marginBottom: '5px' }}>Nova Senha:</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              disabled={loading || invalidResetLink}
-              style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
-              required
-            />
-          </div>
-
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', marginBottom: '5px' }}>Confirmar Nova Senha:</label>
-            <input
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              disabled={loading || invalidResetLink}
-              style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
-              required
-            />
-          </div>
-
-          <button
-            type="submit"
+    <AuthLayout
+      icon={message ? Check : LockKeyhole}
+      title={message ? "Tudo pronto!" : "Crie uma nova senha"}
+      description="Defina sua nova senha para acessar o MeuPetShop."
+    >
+      {(error || invalidResetLink) && (
+        <p className="feedback error" role="alert">
+          {error ||
+            "Link de recuperação inválido. Solicite um novo link para continuar."}
+        </p>
+      )}
+      {message ? (
+        <>
+          <p className="feedback success" role="status">
+            {message}
+          </p>
+          <Link className="primary-button auth-submit" to="/login">
+            Ir para o login
+          </Link>
+        </>
+      ) : (
+        <form className="auth-form" onSubmit={handleSubmit}>
+          <PasswordField
+            id="new-password"
+            label="Nova senha"
+            placeholder="Pelo menos 6 caracteres"
+            autoComplete="new-password"
+            minLength={6}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
             disabled={loading || invalidResetLink}
-            style={{ width: '100%', padding: '10px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+          />
+          <PasswordField
+            id="confirm-password"
+            label="Confirmar nova senha"
+            placeholder="Digite a senha novamente"
+            autoComplete="new-password"
+            minLength={6}
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required
+            disabled={loading || invalidResetLink}
+          />
+          <button
+            className="primary-button auth-submit"
+            disabled={loading || invalidResetLink}
           >
-            {loading ? 'Alterando...' : 'Salvar Nova Senha'}
+            {loading ? "Salvando..." : "Salvar nova senha"}
+            <Check size={17} />
           </button>
         </form>
-      </div>
-    </div>
+      )}
+      {invalidResetLink && (
+        <Link className="auth-back" to="/forgot-password">
+          Solicitar novo link
+        </Link>
+      )}
+      <Link className="auth-back" to="/login">
+        <ArrowLeft size={15} /> Voltar para o login
+      </Link>
+    </AuthLayout>
   );
 }

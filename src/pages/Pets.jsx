@@ -1,27 +1,32 @@
-import { useState, useEffect } from 'react';
-import { apiFetch, getApiErrorMessage } from '../services/apiFetch';
+import ManagementPage from "../components/ManagementPage";
+import { useSearchParams } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { apiFetch, getApiErrorMessage } from "../services/apiFetch";
 
 export default function Pets() {
+  const [searchParams] = useSearchParams();
+  const [formOpen, setFormOpen] = useState(searchParams.get("new") === "1");
+  const [localQuery, setLocalQuery] = useState(null);
+  const query = localQuery ?? searchParams.get("q") ?? "";
   const [pets, setPets] = useState([]);
-  const [clients, setClients] = useState([]); 
+  const [clients, setClients] = useState([]);
 
   // Campos do Formulário
-  const [clientId, setClientId] = useState(''); 
-  const [name, setName] = useState('');
-  const [breed, setBreed] = useState(''); 
-  const [specie, setSpecie] = useState(''); 
+  const [clientId, setClientId] = useState("");
+  const [name, setName] = useState("");
+  const [breed, setBreed] = useState("");
+  const [specie, setSpecie] = useState("");
 
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
-  
   const fetchPets = async () => {
     try {
-      const response = await apiFetch('/api/Pets');
+      const response = await apiFetch("/api/Pets");
       if (response.ok) {
         const responseData = await response.json();
-        
+
         setPets(Array.isArray(responseData.data) ? responseData.data : []);
       }
     } catch (err) {
@@ -31,7 +36,7 @@ export default function Pets() {
 
   const fetchClients = async () => {
     try {
-      const response = await apiFetch('/api/Clients');
+      const response = await apiFetch("/api/Clients");
       if (response.ok) {
         const responseData = await response.json();
         setClients(Array.isArray(responseData.data) ? responseData.data : []);
@@ -50,11 +55,11 @@ export default function Pets() {
 
   const handleCreatePet = async (e) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
+    setError("");
+    setSuccess("");
 
     if (!clientId) {
-      setError('Por favor, selecione um dono para o pet.');
+      setError("Por favor, selecione um dono para o pet.");
       return;
     }
 
@@ -62,24 +67,24 @@ export default function Pets() {
 
     try {
       const response = await apiFetch(`/api/clients/${clientId}/pets`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, breed, specie }),
       });
 
       if (!response.ok) {
-        throw new Error(await getApiErrorMessage(response, 'Erro ao cadastrar pet.'));
+        throw new Error(
+          await getApiErrorMessage(response, "Erro ao cadastrar pet."),
+        );
       }
 
-      setSuccess('Pet cadastrado com sucesso!');
-      
-      
-      setName('');
-      setBreed('');
-      setSpecie('');
-      setClientId('');
-      
-    
+      setSuccess("Pet cadastrado com sucesso!");
+
+      setName("");
+      setBreed("");
+      setSpecie("");
+      setClientId("");
+
       fetchPets();
     } catch (err) {
       setError(err.message);
@@ -89,46 +94,67 @@ export default function Pets() {
   };
 
   const handleDeletePet = async (id) => {
-    const confirmDelete = window.confirm("Tem certeza que deseja excluir este pet?");
+    const confirmDelete = window.confirm(
+      "Tem certeza que deseja excluir este pet?",
+    );
     if (!confirmDelete) return;
 
     try {
-      const response = await apiFetch(`/api/Pets/${id}`, { method: 'DELETE' });
+      const response = await apiFetch(`/api/Pets/${id}`, { method: "DELETE" });
 
       if (!response.ok) {
-        throw new Error(await getApiErrorMessage(response, 'Erro ao excluir o pet.'));
+        throw new Error(
+          await getApiErrorMessage(response, "Erro ao excluir o pet."),
+        );
       }
 
-      setSuccess('Pet excluído com sucesso!');
-      fetchPets(); 
+      setSuccess("Pet excluído com sucesso!");
+      fetchPets();
     } catch (err) {
       setError(err.message);
     }
   };
 
-  return (
-    <div>
-      <h2 style={{ borderBottom: '2px solid #ccc', paddingBottom: '10px' }}>🐶 Gestão de Pets</h2>
+  const filtered = pets.filter((item) =>
+    JSON.stringify(item)
+      .toLocaleLowerCase("pt-BR")
+      .includes(query.toLocaleLowerCase("pt-BR")),
+  );
 
-    
-      <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', marginBottom: '30px' }}>
+  return (
+    <ManagementPage
+      kind="pets"
+      formOpen={formOpen}
+      setFormOpen={setFormOpen}
+      query={query}
+      setQuery={setLocalQuery}
+      count={filtered.length}
+    >
+      {error && (
+        <p className="feedback error" role="alert">
+          {error}
+        </p>
+      )}
+      {success && (
+        <p className="feedback success" role="status">
+          {success}
+        </p>
+      )}
+
+      <div className="panel form-panel entity-form">
         <h3>Novo Pet</h3>
-        {error && <p style={{ color: 'red' }}>{error}</p>}
-        {success && <p style={{ color: 'green' }}>{success}</p>}
-        
-        <form onSubmit={handleCreatePet} style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
-          
-       
-          <div style={{ flex: '1 1 200px' }}>
-            <label style={{ display: 'block', fontSize: '14px', marginBottom: '5px' }}>Dono do Pet:</label>
-            <select 
-              value={clientId} 
-              onChange={(e) => setClientId(e.target.value)} 
-              required 
-              style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
+
+        <form onSubmit={handleCreatePet} className="form-grid">
+          <div>
+            <label htmlFor="pets-field-1">Dono do Pet:</label>
+            <select
+              id="pets-field-1"
+              value={clientId}
+              onChange={(e) => setClientId(e.target.value)}
+              required
             >
               <option value="">-- Selecione o Cliente --</option>
-              {clients.map(client => (
+              {clients.map((client) => (
                 <option key={client.id} value={client.id}>
                   {client.name} ({client.phone})
                 </option>
@@ -136,64 +162,83 @@ export default function Pets() {
             </select>
           </div>
 
-          <div style={{ flex: '1 1 200px' }}>
-            <label style={{ display: 'block', fontSize: '14px', marginBottom: '5px' }}>Nome do Pet:</label>
-            <input type="text" value={name} onChange={(e) => setName(e.target.value)} required style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }} />
+          <div>
+            <label htmlFor="pets-field-2">Nome do Pet:</label>
+            <input
+              id="pets-field-2"
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
           </div>
-          <div style={{ flex: '1 1 200px' }}>
-            <label style={{ display: 'block', fontSize: '14px', marginBottom: '5px' }}>Espécie (Ex: Cão, Gato):</label>
-            <input type="text" value={specie} onChange={(e) => setSpecie(e.target.value)} required style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }} />
+          <div>
+            <label htmlFor="pets-field-3">Espécie (Ex: Cão, Gato):</label>
+            <input
+              id="pets-field-3"
+              type="text"
+              value={specie}
+              onChange={(e) => setSpecie(e.target.value)}
+              required
+            />
           </div>
-          <div style={{ flex: '1 1 200px' }}>
-            <label style={{ display: 'block', fontSize: '14px', marginBottom: '5px' }}>Raça:</label>
-            <input type="text" value={breed} onChange={(e) => setBreed(e.target.value)} required style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }} />
+          <div>
+            <label htmlFor="pets-field-4">Raça:</label>
+            <input
+              id="pets-field-4"
+              type="text"
+              value={breed}
+              onChange={(e) => setBreed(e.target.value)}
+              required
+            />
           </div>
-          
-          <div style={{ flex: '1 1 100%', marginTop: '10px' }}>
-            <button type="submit" disabled={loading} style={{ padding: '10px 20px', backgroundColor: '#3498db', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-              {loading ? 'Salvando...' : '➕ Adicionar Pet'}
+
+          <div className="form-full">
+            <button type="submit" disabled={loading} className="primary-button">
+              {loading ? "Salvando..." : " Adicionar Pet"}
             </button>
           </div>
         </form>
       </div>
 
       {/* Tabela de Pets */}
-      <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-        <h3>Pets Cadastrados</h3>
+      <div className="panel table-panel">
         <div className="table-scroll">
-        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '10px' }}>
-          <thead>
-            <tr style={{ backgroundColor: '#f4f6f9', borderBottom: '2px solid #ddd' }}>
-              <th style={{ padding: '12px', textAlign: 'left' }}>Nome do Pet</th>
-              <th style={{ padding: '12px', textAlign: 'left' }}>Espécie</th>
-              <th style={{ padding: '12px', textAlign: 'left' }}>Raça</th>
-              <th style={{ padding: '12px', textAlign: 'center' }}>Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            {pets.length === 0 ? (
-              <tr><td colSpan="4" style={{ padding: '15px', textAlign: 'center' }}>Nenhum pet cadastrado ainda.</td></tr>
-            ) : (
-              pets.map(pet => (
-                <tr key={pet.id} style={{ borderBottom: '1px solid #eee' }}>
-                  <td style={{ padding: '12px' }}>{pet.name || 'Sem nome'}</td>
-                  <td style={{ padding: '12px' }}>{pet.specie || 'Não informada'}</td>
-                  <td style={{ padding: '12px' }}>{pet.breed || 'Não informada'}</td>
-                  <td style={{ padding: '12px', textAlign: 'center' }}>
-                    <button 
-                      onClick={() => handleDeletePet(pet.id)}
-                      style={{ padding: '6px 12px', backgroundColor: '#e74c3c', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}
-                    >
-                      🗑️ Excluir
-                    </button>
-                  </td>
+          <table>
+            <thead>
+              <tr>
+                <th>Nome do Pet</th>
+                <th>Espécie</th>
+                <th>Raça</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.length === 0 ? (
+                <tr>
+                  <td colSpan="4">Nenhum pet cadastrado ainda.</td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                filtered.map((pet) => (
+                  <tr key={pet.id}>
+                    <td>{pet.name || "Sem nome"}</td>
+                    <td>{pet.specie || "Não informada"}</td>
+                    <td>{pet.breed || "Não informada"}</td>
+                    <td>
+                      <button
+                        onClick={() => handleDeletePet(pet.id)}
+                        className="danger-button"
+                      >
+                        Excluir
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
-    </div>
+    </ManagementPage>
   );
 }

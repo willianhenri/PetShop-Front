@@ -1,25 +1,31 @@
-import { useState, useEffect } from 'react';
-import { apiFetch, getApiErrorMessage } from '../services/apiFetch';
+import ManagementPage from "../components/ManagementPage";
+import { useSearchParams } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { apiFetch, getApiErrorMessage } from "../services/apiFetch";
 
 export default function Users() {
+  const [searchParams] = useSearchParams();
+  const [formOpen, setFormOpen] = useState(searchParams.get("new") === "1");
+  const [localQuery, setLocalQuery] = useState(null);
+  const query = localQuery ?? searchParams.get("q") ?? "";
   const [users, setUsers] = useState([]);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   const fetchUsers = async () => {
     try {
-      const response = await apiFetch('/api/Auth');
-      
+      const response = await apiFetch("/api/Auth");
+
       if (response.ok) {
         const responseData = await response.json();
-     
+
         const lista = responseData.data ? responseData.data : responseData;
         setUsers(Array.isArray(lista) ? lista : []);
       } else {
-        setError('Erro ao carregar a lista de equipe.');
+        setError("Erro ao carregar a lista de equipe.");
       }
     } catch {
-      setError('Falha na conexão com o servidor.');
+      setError("Falha na conexão com o servidor.");
     }
   };
 
@@ -28,77 +34,112 @@ export default function Users() {
   }, []);
 
   const handleDeleteUser = async (id, name) => {
-    const confirmDelete = window.confirm(`PERIGO: Tem certeza que deseja remover permanentemente o acesso de ${name}?`);
+    const confirmDelete = window.confirm(
+      `PERIGO: Tem certeza que deseja remover permanentemente o acesso de ${name}?`,
+    );
     if (!confirmDelete) return;
 
     try {
-      setError('');
-      setSuccess('');
-      const response = await apiFetch(`/api/Auth/${id}`, { method: 'DELETE' });
+      setError("");
+      setSuccess("");
+      const response = await apiFetch(`/api/Auth/${id}`, { method: "DELETE" });
 
       if (!response.ok) {
-        throw new Error(await getApiErrorMessage(response, 'Erro ao remover usuário.'));
+        throw new Error(
+          await getApiErrorMessage(response, "Erro ao remover usuário."),
+        );
       }
 
-      setSuccess('Colaborador removido com sucesso!');
+      setSuccess("Colaborador removido com sucesso!");
       fetchUsers();
     } catch (err) {
       setError(err.message);
     }
   };
 
+  const filtered = users.filter((item) =>
+    JSON.stringify(item)
+      .toLocaleLowerCase("pt-BR")
+      .includes(query.toLocaleLowerCase("pt-BR")),
+  );
+
   return (
-    <div>
-      <h2 style={{ borderBottom: '2px solid #ccc', paddingBottom: '10px' }}>👑 Controle de Acessos Corporativos</h2>
+    <ManagementPage
+      kind="users"
+      formOpen={formOpen}
+      setFormOpen={setFormOpen}
+      query={query}
+      setQuery={setLocalQuery}
+      count={filtered.length}
+    >
+      {error && (
+        <p className="feedback error" role="alert">
+          {error}
+        </p>
+      )}
+      {success && (
+        <p className="feedback success" role="status">
+          {success}
+        </p>
+      )}
 
-      {error && <p style={{ color: 'red', backgroundColor: '#f8d7da', padding: '10px', borderRadius: '4px' }}>{error}</p>}
-      {success && <p style={{ color: 'green', backgroundColor: '#d4edda', padding: '10px', borderRadius: '4px' }}>{success}</p>}
-
-      <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-        <h3>Membros da Equipe</h3>
+      <div className="panel table-panel">
         <div className="table-scroll">
-        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '10px' }}>
-          <thead>
-            <tr style={{ backgroundColor: '#2c3e50', color: 'white' }}>
-              <th style={{ padding: '12px', textAlign: 'left' }}>Nome Completo</th>
-              <th style={{ padding: '12px', textAlign: 'left' }}>Usuário (Username)</th>
-              <th style={{ padding: '12px', textAlign: 'left' }}>E-mail</th>
-              <th style={{ padding: '12px', textAlign: 'left' }}>Cargo</th>
-              <th style={{ padding: '12px', textAlign: 'center' }}>Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.length === 0 ? (
-              <tr><td colSpan="5" style={{ padding: '15px', textAlign: 'center' }}>Nenhum usuário listado.</td></tr>
-            ) : (
-              users.map(user => (
-                <tr key={user.id} style={{ borderBottom: '1px solid #eee' }}>
-                  <td style={{ padding: '12px' }}>{user.fullName}</td>
-                  <td style={{ padding: '12px' }}>{user.username}</td>
-                  <td style={{ padding: '12px' }}>{user.email}</td>
-                  <td style={{ padding: '12px' }}>
-                    <span style={{ 
-                      padding: '4px 8px', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold', color: 'white',
-                      backgroundColor: user.role === 'SuperAdmin' ? '#d35400' : user.role === 'Admin' ? '#f1c40f' : '#3498db'
-                    }}>
-                      {user.role}
-                    </span>
-                  </td>
-                  <td style={{ padding: '12px', textAlign: 'center' }}>
-                    <button 
-                      onClick={() => handleDeleteUser(user.id, user.fullName)}
-                      style={{ padding: '6px 12px', backgroundColor: '#e74c3c', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
-                    >
-                      🗑️ Deletar Conta
-                    </button>
-                  </td>
+          <table>
+            <thead>
+              <tr>
+                <th>Nome Completo</th>
+                <th>Usuário (Username)</th>
+                <th>E-mail</th>
+                <th>Cargo</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.length === 0 ? (
+                <tr>
+                  <td colSpan="5">Nenhum usuário listado.</td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                filtered.map((user) => (
+                  <tr key={user.id}>
+                    <td>{user.fullName}</td>
+                    <td>{user.username}</td>
+                    <td>{user.email}</td>
+                    <td>
+                      <span
+                        style={{
+                          padding: "4px 8px",
+                          borderRadius: "12px",
+                          fontSize: "12px",
+                          fontWeight: "bold",
+                          color: "white",
+                          backgroundColor:
+                            user.role === "SuperAdmin"
+                              ? "#d35400"
+                              : user.role === "Admin"
+                                ? "#f1c40f"
+                                : "#3498db",
+                        }}
+                      >
+                        {user.role}
+                      </span>
+                    </td>
+                    <td>
+                      <button
+                        onClick={() => handleDeleteUser(user.id, user.fullName)}
+                        className="danger-button"
+                      >
+                        Deletar Conta
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
-    </div>
+    </ManagementPage>
   );
 }

@@ -1,62 +1,94 @@
-import { Link, useNavigate } from 'react-router-dom';
-
-export default function Sidebar({ isOpen, onClose }) {
+import { NavLink, useNavigate } from "react-router-dom";
+import {
+  LayoutDashboard,
+  Users,
+  PawPrint,
+  CalendarDays,
+  Scissors,
+  Package,
+  UserRound,
+  ShieldCheck,
+  LogOut,
+  ChevronLeft,
+  ChevronRight,
+  X,
+} from "lucide-react";
+import Brand from "./Brand";
+const links = [
+  ["/home", "Visão geral", LayoutDashboard],
+  ["/clientes", "Clientes", Users],
+  ["/pets", "Pets", PawPrint],
+  ["/agendamentos", "Agenda", CalendarDays],
+  ["/servicos", "Serviços", Scissors],
+  ["/produtos", "Produtos", Package],
+];
+export default function Sidebar({ isOpen, onClose, collapsed, onCollapse }) {
   const navigate = useNavigate();
-  const role = localStorage.getItem('petshop_role');
-
-  const handleLogout = () => {
-    localStorage.clear();
+  const role = localStorage.getItem("petshop_role");
+  const logout = () => {
+    ["petshop_token", "petshop_role", "petshop_name"].forEach((key) =>
+      localStorage.removeItem(key),
+    );
     onClose();
-    navigate('/');
+    navigate("/login");
   };
-
-  const linkStyle = {
-    display: 'block',
-    padding: '12px 20px',
-    color: '#ecf0f1',
-    textDecoration: 'none',
-    borderBottom: '1px solid #34495e',
-    transition: 'background 0.3s'
-  };
-
+  const item = ([path, label, Icon]) => (
+    <NavLink
+      key={path}
+      to={path}
+      onClick={onClose}
+      title={collapsed ? label : undefined}
+      className={({ isActive }) => "nav-item " + (isActive ? "active" : "")}
+    >
+      <Icon size={19} />
+      <span>{label}</span>
+    </NavLink>
+  );
   return (
-    <aside className={`sidebar ${isOpen ? 'sidebar--open' : ''}`}>
-      <div style={{ padding: '20px', backgroundColor: '#1a252f', textAlign: 'center', fontSize: '20px', fontWeight: 'bold' }}>
-        <Link
-          to="/home"
-          onClick={onClose}
-          style={{ color: 'white', textDecoration: 'none' }}
-        >
-          🐾 MeuPetShop
-        </Link>
-        <button type="button" className="sidebar-close" onClick={onClose} aria-label="Fechar menu">×</button>
-      </div>
-
-      
-      <nav style={{ flex: 1, marginTop: '10px' }}>
-        <Link to="/home" onClick={onClose} style={linkStyle}> Home</Link>
-        <Link to="/clientes" onClick={onClose} style={linkStyle}> Clientes</Link>
-        <Link to="/pets" onClick={onClose} style={linkStyle}> Pets</Link>
-        
-       
-        <Link to="/agendamentos" onClick={onClose} style={linkStyle}> Agenda</Link>
-        <Link to="/servicos" onClick={onClose} style={linkStyle}> Serviços</Link>
-        <Link to="/produtos" onClick={onClose} style={linkStyle}> Produtos</Link>
-        
-       
-        {(role === 'Admin' || role === 'SuperAdmin') && (
-          <Link to="/register" onClick={onClose} style={{ ...linkStyle, backgroundColor: '#27ae60' }}> Registrar Funcionário</Link>
+    <aside
+      id="navigation"
+      className={
+        "sidebar " +
+        (collapsed ? "collapsed " : "") +
+        (isOpen ? "sidebar--open" : "")
+      }
+    >
+      <Brand collapsed={collapsed} />
+      <button
+        className="sidebar-close icon-button"
+        aria-label="Fechar menu"
+        onClick={onClose}
+      >
+        <X size={20} />
+      </button>
+      <nav className="nav-list" aria-label="Menu principal">
+        <p className="nav-label">MENU PRINCIPAL</p>
+        {links.map(item)}
+        {(role === "Admin" || role === "SuperAdmin") && (
+          <>
+            <p className="nav-label management-label">GESTÃO</p>
+            {item(["/register", "Registrar funcionário", UserRound])}
+          </>
         )}
-
-        
-        {role === 'SuperAdmin' && (
-          <Link to="/usuarios" onClick={onClose} style={{ ...linkStyle, backgroundColor: '#8e44ad' }}> Gerenciar Equipe</Link>
-        )}
+        {role === "SuperAdmin" &&
+          item(["/usuarios", "Gerenciar equipe", ShieldCheck])}
       </nav>
-
-      <div style={{ padding: '20px', borderTop: '1px solid #34495e' }}>
-        <button onClick={handleLogout} style={{ width: '100%', padding: '10px', backgroundColor: '#e74c3c', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-          Sair do Sistema
+      <div className="sidebar-bottom">
+        <button
+          className="nav-item logout"
+          onClick={logout}
+          title="Sair do sistema"
+        >
+          <LogOut size={19} />
+          <span>Sair do sistema</span>
+        </button>
+        <button
+          className="collapse-btn"
+          onClick={onCollapse}
+          aria-label={collapsed ? "Expandir menu" : "Recolher menu"}
+        >
+          {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+          <span>Recolher menu</span>
         </button>
       </div>
     </aside>

@@ -1,38 +1,47 @@
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { API_BASE_URL } from '../config/api';
-import { getApiErrorMessage } from '../services/apiFetch';
+import AuthLayout from "../components/AuthLayout";
+import PasswordField from "../components/PasswordField";
+import { LogIn, UserRound, ArrowRight } from "lucide-react";
+import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { API_BASE_URL } from "../config/api";
+import { getApiErrorMessage } from "../services/apiFetch";
 
 export default function Login() {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setLoading(true);
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/Auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+
         body: JSON.stringify({ username, password }),
       });
 
       if (!response.ok) {
-        throw new Error(await getApiErrorMessage(response, 'Usuário ou senha incorretos.'));
+        throw new Error(
+          await getApiErrorMessage(response, "Usuário ou senha incorretos."),
+        );
       }
 
       const data = await response.json();
-      
-      localStorage.setItem('petshop_token', data.token);
-      localStorage.setItem('petshop_role', data.role);
 
-      navigate('/home');
+      localStorage.setItem("petshop_token", data.token);
+      localStorage.setItem("petshop_role", data.role);
+      localStorage.setItem(
+        "petshop_name",
+        data.fullName || data.user?.fullName || data.username || username,
+      );
+
+      navigate("/home");
     } catch (err) {
       setError(err.message);
     } finally {
@@ -41,54 +50,53 @@ export default function Login() {
   };
 
   return (
-    <div className="auth-page" style={{ fontFamily: 'Arial', backgroundColor: '#0a192f' }}>
-      <style>{`
-        body {
-          margin: 0 !important;
-          padding: 0 !important;
-          background-color: #0a192f;
-        }
-      `}</style>
-      <div className="auth-card" style={{ border: '1px solid #233554', padding: '30px', borderRadius: '8px', width: '350px', boxShadow: '0 10px 30px rgba(0,0,0,0.5)', backgroundColor: '#112240', color: '#ffffff' }}>
-        <h2 style={{ textAlign: 'center', marginBottom: '20px' }}>Acessar MeuPetShop</h2>
-        {error && <p style={{ color: '#ff6b6b', fontSize: '14px' }}>{error}</p>}
-        
-        <form onSubmit={handleLogin}>
-          {/* Campo de Usuário */}
-          <div style={{ marginBottom: '15px' }}>
-            <label style={{ display: 'block', marginBottom: '5px', color: '#ccd6f6' }}>Usuário (Username):</label>
-            <input 
-              type="text" 
-              value={username} 
-              onChange={(e) => setUsername(e.target.value)} 
-              required 
-              style={{ width: '100%', padding: '10px', boxSizing: 'border-box', backgroundColor: '#172a45', border: '1px solid #233554', color: '#ffffff', borderRadius: '4px' }} 
+    <AuthLayout
+      icon={LogIn}
+      title="Bem-vindo de volta"
+      description="Acesse sua conta para cuidar do seu pet shop."
+    >
+      {error && (
+        <p className="feedback error" role="alert">
+          {error}
+        </p>
+      )}
+      <form onSubmit={handleLogin} className="auth-form">
+        <div className="auth-field">
+          <label htmlFor="username">Nome de usuário</label>
+          <div className="input-icon">
+            <UserRound size={17} />
+            <input
+              id="username"
+              placeholder="Digite seu usuário"
+              autoComplete="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+              disabled={loading}
             />
           </div>
-
-          {/* Campo de Senha */}
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', marginBottom: '5px', color: '#ccd6f6' }}>Senha:</label>
-            <input 
-              type="password" 
-              value={password} 
-              onChange={(e) => setPassword(e.target.value)} 
-              required 
-              style={{ width: '100%', padding: '10px', boxSizing: 'border-box', backgroundColor: '#172a45', border: '1px solid #233554', color: '#ffffff', borderRadius: '4px' }} 
-            />
-          </div>
-
-          {/* Botão Entrar */}
-          <button type="submit" disabled={loading} style={{ width: '100%', padding: '12px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '16px' }}>
-            {loading ? 'Carregando...' : 'Entrar'}
-          </button>
-        </form>
-
-        {/* Link Esqueceu a Senha */}
-        <div style={{ marginTop: '20px', textAlign: 'center', fontSize: '14px' }}>
-          <Link to="/forgot-password" style={{ color: '#64ffda', textDecoration: 'none' }}>Esqueceu a senha?</Link>
         </div>
-      </div>
-    </div>
+        <PasswordField
+          id="password"
+          label="Senha"
+          placeholder="Digite sua senha"
+          autoComplete="current-password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+          disabled={loading}
+        />
+        <Link className="forgot-link" to="/forgot-password">
+          Esqueceu a senha?
+        </Link>
+        <button className="primary-button auth-submit" disabled={loading}>
+          {loading ? "Entrando..." : "Entrar na minha conta"}
+          <ArrowRight size={17} />
+        </button>
+      </form>
+      <p className="auth-note">
+        Seu pet shop organizado. Mais tempo para cuidar.
+      </p>
+    </AuthLayout>
   );
 }

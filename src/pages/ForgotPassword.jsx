@@ -1,68 +1,87 @@
-import { useState } from 'react';
-import { API_BASE_URL } from '../config/api';
-
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { KeyRound, Mail, ArrowLeft, ArrowRight } from "lucide-react";
+import AuthLayout from "../components/AuthLayout";
+import { API_BASE_URL } from "../config/api";
+import { getApiErrorMessage } from "../services/apiFetch";
 export default function ForgotPassword() {
-  const [email, setEmail] = useState('');
-
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [sent, setSent] = useState(false);
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+    setLoading(true);
+    setError("");
     try {
-      
-      const response = await fetch(`${API_BASE_URL}/api/auth/forgot-password`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        
-        body: JSON.stringify({ email: email }),
+      const response = await fetch(API_BASE_URL + "/api/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim() }),
       });
-
-      if (response.ok) {
-        alert('Se o e-mail existir na nossa base, um link de recuperação será enviado!');
-        setEmail(''); 
-      } else {
-        alert('Ocorreu um erro ao tentar enviar o e-mail. Tente novamente mais tarde.');
-      }
-
-    } catch {
-      alert('Erro de conexão com o servidor.');
+      if (!response.ok)
+        throw new Error(
+          await getApiErrorMessage(
+            response,
+            "Não foi possível enviar o e-mail. Tente novamente.",
+          ),
+        );
+      setSent(true);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
   };
-
-  const mainStyle = {
-    padding: '2rem',
-    fontFamily: 'sans-serif',
-    minHeight: '80vh',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    marginTop: '50px'
-  };
-
   return (
-    <main className="forgot-password-page" style={mainStyle}>
-      <h2>Esqueci minha senha</h2>
-      <p>Digite seu e-mail cadastrado para solicitar a redefinição de senha.</p>
-
-      <form className="forgot-password-form" onSubmit={handleSubmit} style={{ textAlign: 'center', marginTop: '20px' }}>
-        <input
-          type="email"
-          placeholder="Digite seu e-mail"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          className="forgot-password-input"
-          style={{ padding: '10px', width: '300px', marginBottom: '15px', borderRadius: '5px', border: '1px solid #ccc' }}
-        />
-        <br />
-        <button 
-          type="submit" 
-          style={{ padding: '10px 20px', cursor: 'pointer', backgroundColor: '#007BFF', color: 'white', border: 'none', borderRadius: '5px', fontWeight: 'bold' }}
-        >
-          Enviar Solicitação
-        </button>
-      </form>
-    </main>
+    <AuthLayout
+      icon={sent ? Mail : KeyRound}
+      title={sent ? "Confira seu e-mail" : "Esqueceu sua senha?"}
+      description={
+        sent
+          ? "Se este e-mail estiver cadastrado, você receberá um link para redefinir sua senha."
+          : "Sem problemas. Informe seu e-mail cadastrado e enviaremos um link de recuperação."
+      }
+    >
+      {error && (
+        <p className="feedback error" role="alert">
+          {error}
+        </p>
+      )}
+      {sent ? (
+        <div className="auth-success" role="status">
+          <p>Verifique também sua caixa de spam.</p>
+          <button className="secondary-button" onClick={() => setSent(false)}>
+            Tentar outro e-mail
+          </button>
+        </div>
+      ) : (
+        <form className="auth-form" onSubmit={handleSubmit}>
+          <div className="auth-field">
+            <label htmlFor="email">E-mail cadastrado</label>
+            <div className="input-icon">
+              <Mail size={17} />
+              <input
+                id="email"
+                type="email"
+                autoComplete="email"
+                placeholder="nome@exemplo.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                disabled={loading}
+              />
+            </div>
+          </div>
+          <button className="primary-button auth-submit" disabled={loading}>
+            {loading ? "Enviando..." : "Enviar link de recuperação"}
+            <ArrowRight size={17} />
+          </button>
+        </form>
+      )}
+      <Link className="auth-back" to="/login">
+        <ArrowLeft size={15} /> Voltar para o login
+      </Link>
+    </AuthLayout>
   );
 }
