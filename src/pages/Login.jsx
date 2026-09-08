@@ -1,7 +1,8 @@
+import { saveSession } from '../services/session';
+import { FormField, Button, Alert } from '../components/ui';
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { API_BASE_URL } from '../config/api';
-import { getApiErrorMessage } from '../services/apiFetch';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
+import { apiFetch, getApiErrorMessage } from '../services/apiFetch';
 
 export default function Login() {
   const [username, setUsername] = useState('');
@@ -9,6 +10,7 @@ export default function Login() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const [params] = useSearchParams();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -16,11 +18,12 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/Auth/login`, {
+      const response = await apiFetch('/api/Auth/login', {
+        anonymous: true,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        
-        body: JSON.stringify({ username, password }),
+
+        body: JSON.stringify({ username: username.trim(), password }),
       });
 
       if (!response.ok) {
@@ -28,11 +31,10 @@ export default function Login() {
       }
 
       const data = await response.json();
-      
-      localStorage.setItem('petshop_token', data.token);
-      localStorage.setItem('petshop_role', data.role);
 
-      navigate('/home');
+      saveSession(data.token, data.role);
+
+      navigate('/home', { replace: true });
     } catch (err) {
       setError(err.message);
     } finally {
@@ -41,52 +43,49 @@ export default function Login() {
   };
 
   return (
-    <div className="auth-page" style={{ fontFamily: 'Arial', backgroundColor: '#0a192f' }}>
-      <style>{`
-        body {
-          margin: 0 !important;
-          padding: 0 !important;
-          background-color: #0a192f;
-        }
-      `}</style>
-      <div className="auth-card" style={{ border: '1px solid #233554', padding: '30px', borderRadius: '8px', width: '350px', boxShadow: '0 10px 30px rgba(0,0,0,0.5)', backgroundColor: '#112240', color: '#ffffff' }}>
-        <h2 style={{ textAlign: 'center', marginBottom: '20px' }}>Acessar MeuPetShop</h2>
-        {error && <p style={{ color: '#ff6b6b', fontSize: '14px' }}>{error}</p>}
-        
+    <div className="auth-page auth-page--login">
+      <div className="auth-card">
+        <h2>Acessar MeuPetShop</h2>
+        {params.get('reason') === 'session-expired' && (
+          <Alert>Sua sessão expirou. Entre novamente para continuar.</Alert>
+        )}
+        {params.get('reason') === 'password-reset' && (
+          <Alert variant="success">Senha redefinida com sucesso. Entre com sua nova senha.</Alert>
+        )}
+        {error && <Alert>{error}</Alert>}
+
         <form onSubmit={handleLogin}>
           {/* Campo de Usuário */}
-          <div style={{ marginBottom: '15px' }}>
-            <label style={{ display: 'block', marginBottom: '5px', color: '#ccd6f6' }}>Usuário (Username):</label>
-            <input 
-              type="text" 
-              value={username} 
-              onChange={(e) => setUsername(e.target.value)} 
-              required 
-              style={{ width: '100%', padding: '10px', boxSizing: 'border-box', backgroundColor: '#172a45', border: '1px solid #233554', color: '#ffffff', borderRadius: '4px' }} 
+          <FormField label="Usuário (Username):">
+            <input
+              type="text"
+              autoComplete="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
             />
-          </div>
+          </FormField>
 
           {/* Campo de Senha */}
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', marginBottom: '5px', color: '#ccd6f6' }}>Senha:</label>
-            <input 
-              type="password" 
-              value={password} 
-              onChange={(e) => setPassword(e.target.value)} 
-              required 
-              style={{ width: '100%', padding: '10px', boxSizing: 'border-box', backgroundColor: '#172a45', border: '1px solid #233554', color: '#ffffff', borderRadius: '4px' }} 
+          <FormField label="Senha:">
+            <input
+              type="password"
+              autoComplete="current-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
             />
-          </div>
+          </FormField>
 
           {/* Botão Entrar */}
-          <button type="submit" disabled={loading} style={{ width: '100%', padding: '12px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '16px' }}>
+          <Button type="submit" disabled={loading}>
             {loading ? 'Carregando...' : 'Entrar'}
-          </button>
+          </Button>
         </form>
 
         {/* Link Esqueceu a Senha */}
-        <div style={{ marginTop: '20px', textAlign: 'center', fontSize: '14px' }}>
-          <Link to="/forgot-password" style={{ color: '#64ffda', textDecoration: 'none' }}>Esqueceu a senha?</Link>
+        <div>
+          <Link to="/forgot-password">Esqueceu a senha?</Link>
         </div>
       </div>
     </div>

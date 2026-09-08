@@ -1,7 +1,8 @@
+import { validatePassword } from '../utils/validation';
+import { FormField, Button, Alert } from '../components/ui';
 import { useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { API_BASE_URL } from '../config/api';
-import { getApiErrorMessage } from '../services/apiFetch';
+import { apiFetch, getApiErrorMessage } from '../services/apiFetch';
 
 export default function ResetPassword() {
   const [searchParams] = useSearchParams();
@@ -9,13 +10,12 @@ export default function ResetPassword() {
 
   const tokenBody = searchParams.get('token');
   const token = tokenBody ? tokenBody.replace(/ /g, '+') : null;
-  
+
   const email = searchParams.get('email');
 
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
   const invalidResetLink = !token || !email;
@@ -23,22 +23,14 @@ export default function ResetPassword() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    setMessage('');
 
-    if (password !== confirmPassword) {
-      setError('As senhas não coincidem.');
-      return;
-    }
-
-    if (password.length < 6) {
-      setError('A senha deve ter pelo menos 6 caracteres.');
-      return;
-    }
-
+    if (invalidResetLink) return;
     setLoading(true);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/auth/reset-password`, {
+      validatePassword(password, confirmPassword);
+      const response = await apiFetch('/api/auth/reset-password', {
+        anonymous: true,
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -53,12 +45,7 @@ export default function ResetPassword() {
         throw new Error(await getApiErrorMessage(response, 'Erro ao redefinir a senha.'));
       }
 
-      setMessage('Senha redefinida com sucesso! Redirecionando para o login...');
-      
-      setTimeout(() => {
-        navigate('/login');
-      }, 3000);
-
+      navigate('/login?reason=password-reset', { replace: true });
     } catch (err) {
       setError(err.message);
     } finally {
@@ -67,46 +54,48 @@ export default function ResetPassword() {
   };
 
   return (
-    <div className="auth-page" style={{ fontFamily: 'sans-serif' }}>
-      <div className="auth-card" style={{ padding: '30px', border: '1px solid #ccc', borderRadius: '8px', width: '100%', maxWidth: '400px' }}>
+    <div className="auth-page">
+      <div className="auth-card">
         <h2>Redefinir Senha</h2>
-        <p style={{ fontSize: '14px', color: '#666' }}>Digite sua nova senha abaixo para acessar o MeuPetShop.</p>
+        <p>Digite sua nova senha abaixo para acessar o MeuPetShop.</p>
 
-        {(error || invalidResetLink) && <div style={{ color: 'red', marginBottom: '15px', fontWeight: 'bold' }}>{error || 'Link de recuperação inválido ou expirado.'}</div>}
-        {message && <div style={{ color: 'green', marginBottom: '15px', fontWeight: 'bold' }}>{message}</div>}
+        {(error || invalidResetLink) && (
+          <Alert>{error || 'Link de recuperação inválido ou expirado.'}</Alert>
+        )}
 
         <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: '15px' }}>
-            <label style={{ display: 'block', marginBottom: '5px' }}>Nova Senha:</label>
+          <FormField
+            label="Nova Senha:"
+            hint="Use pelo menos 8 caracteres. Prefira uma frase longa e única, com letras, números e símbolos."
+          >
             <input
               type="password"
+              minLength={8}
+              autoComplete="new-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               disabled={loading || invalidResetLink}
-              style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
+
               required
             />
-          </div>
+          </FormField>
 
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', marginBottom: '5px' }}>Confirmar Nova Senha:</label>
+          <FormField label="Confirmar Nova Senha:">
             <input
               type="password"
+              minLength={8}
+              autoComplete="new-password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               disabled={loading || invalidResetLink}
-              style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
+
               required
             />
-          </div>
+          </FormField>
 
-          <button
-            type="submit"
-            disabled={loading || invalidResetLink}
-            style={{ width: '100%', padding: '10px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
-          >
+          <Button type="submit" disabled={loading || invalidResetLink}>
             {loading ? 'Alterando...' : 'Salvar Nova Senha'}
-          </button>
+          </Button>
         </form>
       </div>
     </div>

@@ -23,4 +23,6 @@ dist-ssr
 *.sln
 *.sw?
 .env*.local
-TODO.md
+test-results/
+playwright-report/
+.backend-review/

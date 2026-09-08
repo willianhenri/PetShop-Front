@@ -1,0 +1,153 @@
+diff --git a/AuthorizationChecks/AuthorizationChecks.csproj b/AuthorizationChecks/AuthorizationChecks.csproj
+new file mode 100644
+index 0000000..93b7b3a
+--- /dev/null
++++ b/AuthorizationChecks/AuthorizationChecks.csproj
+@@ -0,0 +1,11 @@
++<Project Sdk="Microsoft.NET.Sdk">
++  <PropertyGroup>
++    <OutputType>Exe</OutputType>
++    <TargetFramework>net8.0</TargetFramework>
++    <ImplicitUsings>enable</ImplicitUsings>
++    <Nullable>enable</Nullable>
++  </PropertyGroup>
++  <ItemGroup>
++    <ProjectReference Include="../MeuPetshop.Api/MeuPetshop.Api.csproj" />
++  </ItemGroup>
++</Project>
+diff --git a/AuthorizationChecks/Program.cs b/AuthorizationChecks/Program.cs
+new file mode 100644
+index 0000000..b7d8ba4
+--- /dev/null
++++ b/AuthorizationChecks/Program.cs
+@@ -0,0 +1,47 @@
++using System.Reflection;
++using MeuPetshop.Api.Controllers;
++using MeuPetShop.Domain.Dtos.Auth;
++using Microsoft.AspNetCore.Authorization;
++using Microsoft.AspNetCore.Mvc;
++using Microsoft.AspNetCore.Mvc.Routing;
++
++var publicActions = new HashSet<string> { "Login", "ForgotPassword", "ResetPassword" };
++var count = 0;
++foreach (var controller in typeof(AuthController).Assembly.GetTypes()
++    .Where(type => typeof(ControllerBase).IsAssignableFrom(type)))
++{
++    foreach (var method in controller.GetMethods().Where(method => method.GetCustomAttributes<HttpMethodAttribute>().Any()))
++    {
++        if (controller == typeof(AuthController) && publicActions.Contains(method.Name)) continue;
++        var policies = controller.GetCustomAttributes<AuthorizeAttribute>()
++            .Concat(method.GetCustomAttributes<AuthorizeAttribute>()).ToArray();
++        if (policies.Length == 0) throw new Exception($"Unprotected action: {controller.Name}.{method.Name}");
++        count++;
++    }
++}
++
++void RequireRoles(Type controller, string action, params string[] expected)
++{
++    var actual = controller.GetMethod(action)!.GetCustomAttributes<AuthorizeAttribute>()
++        .SelectMany(attribute => (attribute.Roles ?? "").Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
++        .Order().ToArray();
++    if (!actual.SequenceEqual(expected.Order())) throw new Exception($"Incorrect roles: {controller.Name}.{action}");
++}
++
++RequireRoles(typeof(AuthController), "Register", "Admin", "SuperAdmin");
++RequireRoles(typeof(AuthController), "GetAllUsers", "SuperAdmin");
++RequireRoles(typeof(AuthController), "DeleteUser", "SuperAdmin");
++RequireRoles(typeof(ProductsController), "UpdateProduct", "Admin", "SuperAdmin");
++RequireRoles(typeof(ProductsController), "DeleteProduct", "Admin", "SuperAdmin");
++RequireRoles(typeof(ClientsController), "DeleteClient", "Admin", "SuperAdmin");
++RequireRoles(typeof(PetsController), "DeletePet", "Admin", "SuperAdmin");
++RequireRoles(typeof(ServicesController), "DeleteService", "Admin", "SuperAdmin");
++
++// Null dependencies prove invalid roles are rejected before any user is created.
++var auth = new AuthController(null!, null!, null!);
++foreach (var role in new[] { "SuperAdmin", " SuperAdmin ", "Unknown", "admin" })
++{
++    var result = await auth.Register(new RegisterDto("test", "test@example.com", "Password1!", "Test", role));
++    if (result is not BadRequestObjectResult) throw new Exception($"Accepted privileged role: {role}");
++}
++Console.WriteLine($"PASS: {count} protected actions, 8 role policies and 4 invalid role assignments.");
+diff --git a/MeuPetshop.Api/Controllers/AppointmentsController.cs b/MeuPetshop.Api/Controllers/AppointmentsController.cs
+index 8019ca1..382cfaf 100644
+--- a/MeuPetshop.Api/Controllers/AppointmentsController.cs
++++ b/MeuPetshop.Api/Controllers/AppointmentsController.cs
+@@ -9,6 +9,7 @@ using System.Security.Claims;
+ namespace MeuPetshop.Api.Controllers;
+ 
+ [ApiController]
++[Authorize]
+ [Route("api/appointments")]
+ 
+ public class AppointmentsController : Controller
+@@ -87,4 +88,4 @@ public class AppointmentsController : Controller
+         var response = await _appointmentService.GetAllAppointmentsAsync(pageNumber, pageSize);
+         return Ok(response);
+     }
+-}
+\ No newline at end of file
++}
+diff --git a/MeuPetshop.Api/Controllers/AuthController.cs b/MeuPetshop.Api/Controllers/AuthController.cs
+index 15e3a70..7d5b5d3 100644
+--- a/MeuPetshop.Api/Controllers/AuthController.cs
++++ b/MeuPetshop.Api/Controllers/AuthController.cs
+@@ -40,6 +40,16 @@ public class AuthController : ControllerBase
+     [Authorize(Roles = "Admin,SuperAdmin")]
+     public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
+     {
++        // Public registration never grants SuperAdmin or creates arbitrary roles.
++        // Bootstrap of SuperAdmin remains an explicit administrative operation.
++        var roleToAssign = string.IsNullOrWhiteSpace(registerDto.Role)
++            ? "Funcionario"
++            : registerDto.Role.Trim();
++        if (roleToAssign != "Funcionario" && roleToAssign != "Admin")
++        {
++            return BadRequest(new { Message = "Perfil inválido. Escolha Funcionario ou Admin." });
++        }
++
+         var userExists = await _userManager.FindByNameAsync(registerDto.UserName);
+         if (userExists != null)
+         {
+@@ -71,18 +81,14 @@ public class AuthController : ControllerBase
+         }
+ 
+         
+-        string roleToAssign = !string.IsNullOrWhiteSpace(registerDto.Role) 
+-            ? registerDto.Role 
+-            : "Funcionario";
+-
+-       
+-        if (!await _roleManager.RoleExistsAsync(roleToAssign))
++        var roleResult = await _userManager.AddToRoleAsync(user, roleToAssign);
++        if (!roleResult.Succeeded)
+         {
+-            await _roleManager.CreateAsync(new IdentityRole(roleToAssign));
++            await _userManager.DeleteAsync(user);
++            return StatusCode(StatusCodes.Status500InternalServerError,
++                new { Message = "Não foi possível atribuir o perfil ao usuário." });
+         }
+ 
+-        await _userManager.AddToRoleAsync(user, roleToAssign);
+-
+         return Ok(new { Message = "Usuário criado com sucesso!" });
+     }
+ 
+diff --git a/MeuPetshop.Api/Controllers/ProductsController.cs b/MeuPetshop.Api/Controllers/ProductsController.cs
+index 6bcc958..ea4edb1 100644
+--- a/MeuPetshop.Api/Controllers/ProductsController.cs
++++ b/MeuPetshop.Api/Controllers/ProductsController.cs
+@@ -7,6 +7,7 @@ using MeuPetShop.Domain.Shared;
+ namespace MeuPetshop.Api.Controllers;
+ 
+ [ApiController]
++[Authorize]
+ [Route("api/[controller]")]
+ 
+ public class ProductsController : ControllerBase
+@@ -85,4 +86,4 @@ public class ProductsController : ControllerBase
+         }
+         return NoContent();
+     }
+-}
+\ No newline at end of file
++}
