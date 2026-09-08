@@ -1,3 +1,5 @@
+import AuthLayout from "../components/AuthLayout";
+import { LogIn } from "lucide-react";
 import { saveSession } from '../services/session';
 import { FormField, Button, Alert } from '../components/ui';
 import { useState } from 'react';
@@ -33,6 +35,7 @@ export default function Login() {
       const data = await response.json();
 
       saveSession(data.token, data.role);
+      sessionStorage.setItem('petshop_name', data.fullName || data.user?.fullName || data.username || username.trim());
 
       navigate('/home', { replace: true });
     } catch (err) {
@@ -43,9 +46,7 @@ export default function Login() {
   };
 
   return (
-    <div className="auth-page auth-page--login">
-      <div className="auth-card">
-        <h2>Acessar MeuPetShop</h2>
+    <AuthLayout icon={LogIn} title="Bem-vindo de volta" description="Acesse sua conta para cuidar do seu pet shop.">
         {params.get('reason') === 'session-expired' && (
           <Alert>Sua sessão expirou. Entre novamente para continuar.</Alert>
         )}
@@ -87,7 +88,6 @@ export default function Login() {
         <div>
           <Link to="/forgot-password">Esqueceu a senha?</Link>
         </div>
-      </div>
-    </div>
+    </AuthLayout>
   );
 }

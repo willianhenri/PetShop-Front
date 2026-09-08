@@ -1,3 +1,4 @@
+import ManagementPage from "../components/ManagementPage";
 import { PageCard, Button, Alert } from '../components/ui';
 import DataTable from '../components/DataTable';
 import { useCollection } from '../hooks/useCollection';
@@ -36,8 +37,7 @@ export default function Users() {
     });
 
   return (
-    <div>
-      <h2 className="page-title">👑 Controle de Acessos Corporativos</h2>
+    <ManagementPage kind="users" embedded>
 
       {error && <Alert>{error}</Alert>}
       {success && <Alert variant="success">{success}</Alert>}
@@ -75,6 +75,6 @@ export default function Users() {
           )}
         />
       </PageCard>
-    </div>
+    </ManagementPage>
   );
 }

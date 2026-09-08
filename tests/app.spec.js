@@ -386,11 +386,11 @@ test('home usa indicadores reais e links rápidos', async ({ page }) => {
   await session(page);
   await mockApi(page);
   await page.goto('/home');
-  await expect(page.locator('.metric')).toHaveText(['1', '0', '1']);
+  await expect(page.locator('.stat-card strong')).toHaveText(['0', '1', '1', '1']);
   await expect(page.getByText('Ração:')).toContainText('3 unidades');
   await expect(page.getByRole('link', { name: 'Novo agendamento' })).toHaveAttribute(
     'href',
-    '/agendamentos',
+    '/agendamentos?new=1',
   );
 });
 
@@ -536,6 +536,6 @@ test('campos têm labels, cabeçalhos têm scope e layout cabe na tela', async (
   await expect(page.locator('caption')).toHaveText('Clientes cadastrados');
   await page.screenshot({ path: testInfo.outputPath('clientes.png'), fullPage: true });
   await page.goto('/home');
-  await expect(page.locator('.metric')).toHaveText(['1', '0', '1']);
+  await expect(page.locator('.stat-card strong')).toHaveText(['0', '1', '1', '1']);
   await page.screenshot({ path: testInfo.outputPath('home.png'), fullPage: true });
 });

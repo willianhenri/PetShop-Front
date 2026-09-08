@@ -1,3 +1,5 @@
+import AuthLayout from "../components/AuthLayout";
+import { LockKeyhole } from "lucide-react";
 import { validatePassword } from '../utils/validation';
 import { FormField, Button, Alert } from '../components/ui';
 import { useState } from 'react';
@@ -54,10 +56,7 @@ export default function ResetPassword() {
   };
 
   return (
-    <div className="auth-page">
-      <div className="auth-card">
-        <h2>Redefinir Senha</h2>
-        <p>Digite sua nova senha abaixo para acessar o MeuPetShop.</p>
+    <AuthLayout icon={LockKeyhole} title="Redefinir Senha" description="Digite sua nova senha abaixo para acessar o MeuPetShop.">
 
         {(error || invalidResetLink) && (
           <Alert>{error || 'Link de recuperação inválido ou expirado.'}</Alert>
@@ -97,7 +96,6 @@ export default function ResetPassword() {
             {loading ? 'Alterando...' : 'Salvar Nova Senha'}
           </Button>
         </form>
-      </div>
-    </div>
+    </AuthLayout>
   );
 }

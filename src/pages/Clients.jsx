@@ -1,3 +1,4 @@
+import ManagementPage from "../components/ManagementPage";
 import { PageCard, FormField, Button, Alert } from '../components/ui';
 import DataTable from '../components/DataTable';
 import { useCollection } from '../hooks/useCollection';
@@ -79,8 +80,7 @@ export default function Clients() {
   };
 
   return (
-    <div>
-      <h2 className="page-title">👥 Gestão de Clientes</h2>
+    <ManagementPage kind="clients" embedded>
 
       <PageCard>
         <h3>Novo Cliente</h3>
@@ -162,6 +162,6 @@ export default function Clients() {
           )}
         />
       </PageCard>
-    </div>
+    </ManagementPage>
   );
 }

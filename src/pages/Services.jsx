@@ -1,3 +1,4 @@
+import ManagementPage from "../components/ManagementPage";
 import { nonNegativeNumber, normalizeText } from '../utils/validation';
 import { PageCard, FormField, Button, Alert } from '../components/ui';
 import DataTable from '../components/DataTable';
@@ -107,8 +108,7 @@ export default function Services() {
   };
 
   return (
-    <div>
-      <h2 className="page-title">🛠️ Gestão de Serviços</h2>
+    <ManagementPage kind="services" embedded>
 
       <PageCard>
         <h3>{editingId ? 'Editar Serviço' : 'Novo Serviço'}</h3>
@@ -220,6 +220,6 @@ export default function Services() {
           )}
         />
       </PageCard>
-    </div>
+    </ManagementPage>
   );
 }

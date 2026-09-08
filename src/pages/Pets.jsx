@@ -1,3 +1,4 @@
+import ManagementPage from "../components/ManagementPage";
 import { normalizeText } from '../utils/validation';
 import { PageCard, FormField, Button, Alert, CollectionStatus } from '../components/ui';
 import DataTable from '../components/DataTable';
@@ -88,8 +89,7 @@ export default function Pets() {
     });
 
   return (
-    <div>
-      <h2 className="page-title">🐶 Gestão de Pets</h2>
+    <ManagementPage kind="pets" embedded>
 
       <PageCard>
         <h3>Novo Pet</h3>
@@ -171,6 +171,6 @@ export default function Pets() {
           )}
         />
       </PageCard>
-    </div>
+    </ManagementPage>
   );
 }

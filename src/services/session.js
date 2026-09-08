@@ -1,4 +1,4 @@
-const KEYS = ['petshop_token', 'petshop_role'];
+const KEYS = ['petshop_token', 'petshop_role', 'petshop_name'];
 
 export function clearLegacySession() {
   for (const key of KEYS) localStorage.removeItem(key);

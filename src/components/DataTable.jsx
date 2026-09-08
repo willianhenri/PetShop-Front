@@ -1,3 +1,4 @@
+import { useSearchParams } from "react-router-dom";
 import { useId, useState } from 'react';
 import { Button, CollectionStatus, FormField } from './ui';
 
@@ -18,7 +19,9 @@ export default function DataTable({
   filter,
 }) {
   const id = useId();
-  const [query, setQuery] = useState('');
+  const [searchParams] = useSearchParams();
+  const [localQuery, setQuery] = useState(null);
+  const query = localQuery ?? searchParams.get('q') ?? '';
   const [filterValue, setFilterValue] = useState('');
   const [sort, setSort] = useState({ key: columns[0].key, direction: 1 });
   const [page, setPage] = useState(1);

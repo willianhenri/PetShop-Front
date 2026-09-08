@@ -1,3 +1,4 @@
+import ManagementPage from "../components/ManagementPage";
 import { minimumAppointmentTime, validateAppointment } from '../utils/validation';
 import { PageCard, FormField, Button, Alert, CollectionStatus } from '../components/ui';
 import DataTable from '../components/DataTable';
@@ -163,8 +164,7 @@ export default function Appointments() {
     : [];
 
   return (
-    <div>
-      <h2 className="page-title">📅 Gestão de Agendamentos</h2>
+    <ManagementPage kind="appointments" embedded>
 
       <PageCard>
         <h3>{editingId ? 'Editar Agendamento' : 'Novo Agendamento'}</h3>
@@ -323,6 +323,6 @@ export default function Appointments() {
           )}
         />
       </PageCard>
-    </div>
+    </ManagementPage>
   );
 }

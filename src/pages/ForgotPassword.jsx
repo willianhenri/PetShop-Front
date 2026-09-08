@@ -1,3 +1,5 @@
+import AuthLayout from "../components/AuthLayout";
+import { KeyRound } from "lucide-react";
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { apiFetch, getApiErrorMessage } from '../services/apiFetch';
@@ -34,10 +36,7 @@ export default function ForgotPassword() {
     }
   }
   return (
-    <main className="auth-page">
-      <div className="auth-card">
-        <h2>Esqueci minha senha</h2>
-        <p>Digite seu e-mail cadastrado para solicitar a redefinição de senha.</p>
+    <AuthLayout icon={KeyRound} title="Esqueci minha senha" description="Digite seu e-mail cadastrado para solicitar a redefini??o de senha.">
         <Alert>{error}</Alert>
         <Alert variant="success">{success}</Alert>
         <form onSubmit={handleSubmit}>
@@ -57,7 +56,6 @@ export default function ForgotPassword() {
         <p>
           <Link to="/login">Voltar ao login</Link>
         </p>
-      </div>
-    </main>
+    </AuthLayout>
   );
 }

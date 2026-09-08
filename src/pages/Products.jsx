@@ -1,3 +1,4 @@
+import ManagementPage from "../components/ManagementPage";
 import { nonNegativeNumber, normalizeText } from '../utils/validation';
 import { PageCard, FormField, Button, Alert } from '../components/ui';
 import DataTable from '../components/DataTable';
@@ -107,8 +108,7 @@ export default function Products() {
   };
 
   return (
-    <div>
-      <h2 className="page-title">📦 Gestão de Produtos</h2>
+    <ManagementPage kind="products" embedded>
 
       <PageCard>
         <h3>{editingId ? 'Editar Produto' : 'Novo Produto'}</h3>
@@ -216,6 +216,6 @@ export default function Products() {
           )}
         />
       </PageCard>
-    </div>
+    </ManagementPage>
   );
 }
