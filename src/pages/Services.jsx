@@ -1,8 +1,15 @@
-import { useState, useEffect } from 'react';
+import { nonNegativeNumber, normalizeText } from '../utils/validation';
+import { PageCard, FormField, Button, Alert } from '../components/ui';
+import DataTable from '../components/DataTable';
+import { useCollection } from '../hooks/useCollection';
+import { usePendingAction } from '../hooks/usePendingAction';
+import { isAdmin } from '../services/session';
+import { useState } from 'react';
 import { apiFetch, getApiErrorMessage } from '../services/apiFetch';
 
 export default function Services() {
-  const [services, setServices] = useState([]);
+  const servicesState = useCollection('/api/Services');
+  const { data: services, reload: fetchServices } = servicesState;
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
@@ -11,29 +18,9 @@ export default function Services() {
   const [editingId, setEditingId] = useState(null);
 
   const [loading, setLoading] = useState(false);
+  const { pending, run } = usePendingAction();
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-
-  const fetchServices = async () => {
-    try {
-      const response = await apiFetch('/api/Services');
-
-      if (response.ok) {
-        const data = await response.json();
-        setServices(Array.isArray(data.data) ? data.data : []);
-      } else {
-        console.error("A API retornou um erro:", response.status);
-        setServices([]);
-      }
-    } catch (err) {
-      console.error("Erro ao buscar serviços:", err);
-      setServices([]);
-    }
-  };
-
-  useEffect(() => {
-    void Promise.resolve().then(fetchServices);
-  }, []);
 
   const resetForm = () => {
     setName('');
@@ -53,26 +40,29 @@ export default function Services() {
     setSuccess('');
   };
 
-  const handleDeleteService = async (id) => {
-    const confirmDelete = window.confirm("Tem certeza que deseja excluir este serviço? Essa ação não pode ser desfeita.");
-    if (!confirmDelete) return;
+  const handleDeleteService = async (id) =>
+    run(id, async () => {
+      const confirmDelete = window.confirm(
+        'Tem certeza que deseja excluir este serviço? Essa ação não pode ser desfeita.',
+      );
+      if (!confirmDelete) return;
 
-    try {
-      const response = await apiFetch(`/api/Services/${id}`, { method: 'DELETE' });
+      try {
+        const response = await apiFetch(`/api/Services/${id}`, { method: 'DELETE' });
 
-      if (!response.ok) {
-        throw new Error(await getApiErrorMessage(response, 'Erro ao excluir o serviço.'));
+        if (!response.ok) {
+          throw new Error(await getApiErrorMessage(response, 'Erro ao excluir o serviço.'));
+        }
+
+        setSuccess('Serviço excluído com sucesso!');
+        if (editingId === id) resetForm();
+        setError('');
+        await fetchServices();
+      } catch (err) {
+        setError(err.message);
+        setSuccess('');
       }
-
-      setSuccess('Serviço excluído com sucesso!');
-      setError('');
-      fetchServices();
-
-    } catch (err) {
-      setError(err.message);
-      setSuccess('');
-    }
-  };
+    });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -83,26 +73,32 @@ export default function Services() {
     const isEditing = editingId !== null;
 
     try {
+      if (!normalizeText(name)) throw new Error('Preencha o nome.');
       const path = isEditing ? `/api/Services/${editingId}` : '/api/Services';
 
       const response = await apiFetch(path, {
         method: isEditing ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name,
-          description,
-          price: parseFloat(price),
-          durationInMinutes: parseInt(durationInMinutes, 10)
+          name: normalizeText(name),
+          description: normalizeText(description),
+          price: nonNegativeNumber(price, 'Preço'),
+          durationInMinutes: nonNegativeNumber(durationInMinutes, 'Duração', true),
         }),
       });
 
       if (!response.ok) {
-        throw new Error(await getApiErrorMessage(response, `Erro ao ${isEditing ? 'atualizar' : 'cadastrar'} serviço.`));
+        throw new Error(
+          await getApiErrorMessage(
+            response,
+            `Erro ao ${isEditing ? 'atualizar' : 'cadastrar'} serviço.`,
+          ),
+        );
       }
 
       setSuccess(`Serviço ${isEditing ? 'atualizado' : 'cadastrado'} com sucesso!`);
       resetForm();
-      fetchServices();
+      await fetchServices();
     } catch (err) {
       setError(err.message);
     } finally {
@@ -112,94 +108,118 @@ export default function Services() {
 
   return (
     <div>
-      <h2 style={{ borderBottom: '2px solid #ccc', paddingBottom: '10px' }}>🛠️ Gestão de Serviços</h2>
+      <h2 className="page-title">🛠️ Gestão de Serviços</h2>
 
-      <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', marginBottom: '30px' }}>
+      <PageCard>
         <h3>{editingId ? 'Editar Serviço' : 'Novo Serviço'}</h3>
-        {error && <p style={{ color: 'red' }}>{error}</p>}
-        {success && <p style={{ color: 'green' }}>{success}</p>}
+        {error && <Alert>{error}</Alert>}
+        {success && <Alert variant="success">{success}</Alert>}
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
-          <div style={{ flex: '1 1 200px' }}>
-            <label style={{ display: 'block', fontSize: '14px', marginBottom: '5px' }}>Nome:</label>
-            <input type="text" value={name} onChange={(e) => setName(e.target.value)} required style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }} />
-          </div>
-          <div style={{ flex: '1 1 200px' }}>
-            <label style={{ display: 'block', fontSize: '14px', marginBottom: '5px' }}>Preço (R$):</label>
-            <input type="number" step="0.01" min="0" value={price} onChange={(e) => setPrice(e.target.value)} required style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }} />
-          </div>
-          <div style={{ flex: '1 1 200px' }}>
-            <label style={{ display: 'block', fontSize: '14px', marginBottom: '5px' }}>Duração (minutos):</label>
-            <input type="number" min="0" value={durationInMinutes} onChange={(e) => setDurationInMinutes(e.target.value)} required style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }} />
-          </div>
-          <div style={{ flex: '1 1 100%' }}>
-            <label style={{ display: 'block', fontSize: '14px', marginBottom: '5px' }}>Descrição:</label>
-            <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }} />
-          </div>
+        <form onSubmit={handleSubmit} className="form-grid">
+          <FormField label="Nome:">
+            <input type="text" value={name} onChange={(e) => setName(e.target.value)} required />
+          </FormField>
+          <FormField label="Preço (R$):">
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+              required
+            />
+          </FormField>
+          <FormField label="Duração (minutos):">
+            <input
+              type="number"
+              min="0"
+              value={durationInMinutes}
+              onChange={(e) => setDurationInMinutes(e.target.value)}
+              required
+            />
+          </FormField>
+          <FormField label="Descrição:">
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={3}
+            />
+          </FormField>
 
-          <div style={{ flex: '1 1 100%', marginTop: '10px', display: 'flex', gap: '10px' }}>
-            <button type="submit" disabled={loading} style={{ padding: '10px 20px', backgroundColor: '#3498db', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-              {loading ? 'Salvando...' : editingId ? '💾 Salvar Alterações' : '➕ Adicionar Serviço'}
-            </button>
+          <div className="form-actions">
+            <Button type="submit" disabled={loading}>
+              {loading
+                ? 'Salvando...'
+                : editingId
+                  ? '💾 Salvar Alterações'
+                  : '➕ Adicionar Serviço'}
+            </Button>
             {editingId && (
-              <button type="button" onClick={resetForm} style={{ padding: '10px 20px', backgroundColor: '#95a5a6', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+              <Button variant="secondary" type="button" disabled={loading} onClick={resetForm}>
                 Cancelar
-              </button>
+              </Button>
             )}
           </div>
         </form>
-      </div>
+      </PageCard>
 
-      <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+      <PageCard>
         <h3>Serviços Cadastrados</h3>
-        <div className="table-scroll">
-        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '10px' }}>
-          <thead>
-            <tr style={{ backgroundColor: '#f4f6f9', borderBottom: '2px solid #ddd' }}>
-              <th style={{ padding: '12px', textAlign: 'left' }}>Nome</th>
-              <th style={{ padding: '12px', textAlign: 'left' }}>Descrição</th>
-              <th style={{ padding: '12px', textAlign: 'left' }}>Preço</th>
-              <th style={{ padding: '12px', textAlign: 'left' }}>Duração</th>
-              <th style={{ padding: '12px', textAlign: 'center' }}>Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            {services.length === 0 ? (
-              <tr><td colSpan="5" style={{ padding: '15px', textAlign: 'center' }}>Nenhum serviço cadastrado ainda.</td></tr>
-            ) : (
-              services.map(service => (
-                <tr key={service.id} style={{ borderBottom: '1px solid #eee' }}>
-                  <td style={{ padding: '12px' }}>{service.name || 'Sem nome'}</td>
-                  <td style={{ padding: '12px' }}>{service.description || 'Não informado'}</td>
-                  <td style={{ padding: '12px' }}>
-                    {typeof service.price === 'number'
-                      ? service.price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-                      : 'Não informado'}
-                  </td>
-                  <td style={{ padding: '12px' }}>
-                    {service.durationInMinutes != null ? `${service.durationInMinutes} min` : 'Não informado'}
-                  </td>
-                  <td style={{ padding: '12px', textAlign: 'center' }}>
-                    <button
-                      onClick={() => handleEditClick(service)}
-                      style={{ padding: '6px 12px', backgroundColor: '#f39c12', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', marginRight: '6px' }}
-                    >
-                      ✏️ Editar
-                    </button>
-                    <button
-                      onClick={() => handleDeleteService(service.id)}
-                      style={{ padding: '6px 12px', backgroundColor: '#e74c3c', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}
-                    >
-                      🗑️ Excluir
-                    </button>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-        </div>
-      </div>
+        <DataTable
+          caption="Serviços cadastrados"
+          rows={services}
+          {...servicesState}
+          columns={[
+            { key: 'name', label: 'Nome', value: (row) => row.name },
+            { key: 'description', label: 'Descrição', value: (row) => row.description },
+            {
+              key: 'price',
+              label: 'Preço',
+              value: (row) => row.price,
+              render: (row) =>
+                typeof row.price === 'number'
+                  ? row.price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+                  : 'Não informado',
+            },
+            {
+              key: 'durationInMinutes',
+              label: 'Duração (min)',
+              value: (row) => row.durationInMinutes,
+            },
+          ]}
+          filter={{
+            label: 'Duração (min)',
+            options: [
+              ...new Set(
+                services
+                  .map((row) => row.durationInMinutes)
+                  .filter((value) => value != null && value !== ''),
+              ),
+            ].map((value) => ({ value: String(value), label: String(value) })),
+            matches: (row, value) => String(row.durationInMinutes) === value,
+          }}
+          renderActions={(row) => (
+            <>
+              <Button
+                variant="secondary"
+                disabled={pending.has(row.id) || loading}
+                onClick={() => handleEditClick(row)}
+              >
+                Editar
+              </Button>
+              {isAdmin() && (
+                <Button
+                  variant="danger"
+                  disabled={pending.has(row.id)}
+                  onClick={() => handleDeleteService(row.id)}
+                >
+                  {pending.has(row.id) ? 'Aguarde...' : 'Excluir'}
+                </Button>
+              )}
+            </>
+          )}
+        />
+      </PageCard>
     </div>
   );
 }

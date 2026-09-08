@@ -1,3 +1,5 @@
+import { validatePassword } from '../utils/validation';
+import { FormField, Button, Alert } from '../components/ui';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiFetch, getApiErrorMessage } from '../services/apiFetch';
@@ -7,9 +9,9 @@ export default function Register() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  
+  const [confirmPassword, setConfirmPassword] = useState('');
 
-  const [role, setRole] = useState('Funcionario'); 
+  const [role, setRole] = useState('Funcionario');
 
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -23,11 +25,19 @@ export default function Register() {
     setLoading(true);
 
     try {
+      validatePassword(password, confirmPassword);
+      if (!fullName.trim() || !username.trim()) throw new Error('Preencha nome e usuário.');
       const response = await apiFetch('/api/Auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
- 
-        body: JSON.stringify({ username, email, password, fullName, role }),
+
+        body: JSON.stringify({
+          username: username.trim(),
+          email: email.trim().toLowerCase(),
+          password,
+          fullName: fullName.trim().replace(/\s+/g, ' '),
+          role,
+        }),
       });
 
       if (!response.ok) {
@@ -35,14 +45,13 @@ export default function Register() {
       }
 
       setSuccess('Novo usuário cadastrado com sucesso!');
-      
-    
+
       setFullName('');
       setUsername('');
       setEmail('');
       setPassword('');
+      setConfirmPassword('');
       setRole('Funcionario');
-      
     } catch (err) {
       setError(err.message);
     } finally {
@@ -51,50 +60,71 @@ export default function Register() {
   };
 
   return (
-    <div className="register-page" style={{ padding: '20px', fontFamily: 'Arial' }}>
-      <button onClick={() => navigate('/home')} style={{ marginBottom: '20px', padding: '5px 10px' }}>← Voltar ao Painel</button>
-      <div className="register-card" style={{ border: '1px solid #ccc', padding: '30px', borderRadius: '8px', width: '400px', maxWidth: '100%', backgroundColor: 'white' }}>
+    <div className="register-page">
+      <Button onClick={() => navigate('/home')}>← Voltar ao Painel</Button>
+      <div className="register-card">
         <h2>Cadastrar Novo Colaborador</h2>
-        {error && <p style={{ color: 'red' }}>{error}</p>}
-        {success && <p style={{ color: 'green' }}>{success}</p>}
+        {error && <Alert>{error}</Alert>}
+        {success && <Alert variant="success">{success}</Alert>}
 
         <form onSubmit={handleRegister}>
-          <div style={{ marginBottom: '15px' }}>
-            <label style={{ display: 'block', marginBottom: '5px' }}>Nome Completo:</label>
-            <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} required style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }} />
-          </div>
-          
-          <div style={{ marginBottom: '15px' }}>
-            <label style={{ display: 'block', marginBottom: '5px' }}>Nome de Usuário:</label>
-            <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} required style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }} />
-          </div>
-          
-          <div style={{ marginBottom: '15px' }}>
-            <label style={{ display: 'block', marginBottom: '5px' }}>E-mail corporativo:</label>
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }} />
-          </div>
-          
-          <div style={{ marginBottom: '15px' }}>
-            <label style={{ display: 'block', marginBottom: '5px' }}>Senha Provisória:</label>
-            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }} />
-          </div>
+          <FormField label="Nome Completo:">
+            <input
+              type="text"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              required
+            />
+          </FormField>
 
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Nível de Acesso (Perfil):</label>
-            <select 
-              value={role} 
-              onChange={(e) => setRole(e.target.value)} 
-              required 
-              style={{ width: '100%', padding: '8px', boxSizing: 'border-box', backgroundColor: '#f8f9fa' }}
-            >
+          <FormField label="Nome de Usuário:">
+            <input
+              type="text"
+              autoComplete="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+            />
+          </FormField>
+
+          <FormField label="E-mail corporativo:">
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+          </FormField>
+
+          <FormField
+            label="Senha Provisória:"
+            hint="Use pelo menos 8 caracteres. Prefira uma frase longa e única, com letras, números e símbolos."
+          >
+            <input
+              type="password"
+              minLength={8}
+              autoComplete="new-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </FormField>
+
+          <FormField label="Confirmar senha:">
+            <input
+              type="password"
+              minLength={8}
+              autoComplete="new-password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+            />
+          </FormField>
+          <FormField label="Nível de Acesso (Perfil):">
+            <select value={role} onChange={(e) => setRole(e.target.value)} required>
               <option value="Funcionario">Funcionário Comum</option>
               <option value="Admin">Administrador (Total)</option>
             </select>
-          </div>
+          </FormField>
 
-          <button type="submit" disabled={loading} style={{ width: '100%', padding: '10px', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>
+          <Button type="submit" disabled={loading}>
             {loading ? 'Salvando...' : 'Confirmar Cadastro'}
-          </button>
+          </Button>
         </form>
       </div>
     </div>

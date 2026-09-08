@@ -1,52 +1,28 @@
-import { useState, useEffect } from 'react';
+import { normalizeText } from '../utils/validation';
+import { PageCard, FormField, Button, Alert, CollectionStatus } from '../components/ui';
+import DataTable from '../components/DataTable';
+import { useCollection } from '../hooks/useCollection';
+import { usePendingAction } from '../hooks/usePendingAction';
+import { isAdmin } from '../services/session';
+import { useState } from 'react';
 import { apiFetch, getApiErrorMessage } from '../services/apiFetch';
 
 export default function Pets() {
-  const [pets, setPets] = useState([]);
-  const [clients, setClients] = useState([]); 
+  const petsState = useCollection('/api/Pets');
+  const { data: pets, reload: fetchPets } = petsState;
+  const clientsState = useCollection('/api/Clients');
+  const { data: clients } = clientsState;
 
   // Campos do Formulário
-  const [clientId, setClientId] = useState(''); 
+  const [clientId, setClientId] = useState('');
   const [name, setName] = useState('');
-  const [breed, setBreed] = useState(''); 
-  const [specie, setSpecie] = useState(''); 
+  const [breed, setBreed] = useState('');
+  const [specie, setSpecie] = useState('');
 
   const [loading, setLoading] = useState(false);
+  const { pending, run } = usePendingAction();
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-
-  
-  const fetchPets = async () => {
-    try {
-      const response = await apiFetch('/api/Pets');
-      if (response.ok) {
-        const responseData = await response.json();
-        
-        setPets(Array.isArray(responseData.data) ? responseData.data : []);
-      }
-    } catch (err) {
-      console.error("Erro ao buscar pets:", err);
-    }
-  };
-
-  const fetchClients = async () => {
-    try {
-      const response = await apiFetch('/api/Clients');
-      if (response.ok) {
-        const responseData = await response.json();
-        setClients(Array.isArray(responseData.data) ? responseData.data : []);
-      }
-    } catch (err) {
-      console.error("Erro ao buscar clientes:", err);
-    }
-  };
-
-  useEffect(() => {
-    void Promise.resolve().then(() => {
-      fetchPets();
-      fetchClients();
-    });
-  }, []);
 
   const handleCreatePet = async (e) => {
     e.preventDefault();
@@ -61,10 +37,16 @@ export default function Pets() {
     setLoading(true);
 
     try {
+      if (![name, breed, specie].every((value) => normalizeText(value)))
+        throw new Error('Preencha nome, espécie e raça do pet.');
       const response = await apiFetch(`/api/clients/${clientId}/pets`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, breed, specie }),
+        body: JSON.stringify({
+          name: normalizeText(name),
+          breed: normalizeText(breed),
+          specie: normalizeText(specie),
+        }),
       });
 
       if (!response.ok) {
@@ -72,15 +54,13 @@ export default function Pets() {
       }
 
       setSuccess('Pet cadastrado com sucesso!');
-      
-      
+
       setName('');
       setBreed('');
       setSpecie('');
       setClientId('');
-      
-    
-      fetchPets();
+
+      await fetchPets();
     } catch (err) {
       setError(err.message);
     } finally {
@@ -88,112 +68,109 @@ export default function Pets() {
     }
   };
 
-  const handleDeletePet = async (id) => {
-    const confirmDelete = window.confirm("Tem certeza que deseja excluir este pet?");
-    if (!confirmDelete) return;
+  const handleDeletePet = async (id) =>
+    run(id, async () => {
+      const confirmDelete = window.confirm('Tem certeza que deseja excluir este pet?');
+      if (!confirmDelete) return;
 
-    try {
-      const response = await apiFetch(`/api/Pets/${id}`, { method: 'DELETE' });
+      try {
+        const response = await apiFetch(`/api/Pets/${id}`, { method: 'DELETE' });
 
-      if (!response.ok) {
-        throw new Error(await getApiErrorMessage(response, 'Erro ao excluir o pet.'));
+        if (!response.ok) {
+          throw new Error(await getApiErrorMessage(response, 'Erro ao excluir o pet.'));
+        }
+
+        setSuccess('Pet excluído com sucesso!');
+        await fetchPets();
+      } catch (err) {
+        setError(err.message);
       }
-
-      setSuccess('Pet excluído com sucesso!');
-      fetchPets(); 
-    } catch (err) {
-      setError(err.message);
-    }
-  };
+    });
 
   return (
     <div>
-      <h2 style={{ borderBottom: '2px solid #ccc', paddingBottom: '10px' }}>🐶 Gestão de Pets</h2>
+      <h2 className="page-title">🐶 Gestão de Pets</h2>
 
-    
-      <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', marginBottom: '30px' }}>
+      <PageCard>
         <h3>Novo Pet</h3>
-        {error && <p style={{ color: 'red' }}>{error}</p>}
-        {success && <p style={{ color: 'green' }}>{success}</p>}
-        
-        <form onSubmit={handleCreatePet} style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
-          
-       
-          <div style={{ flex: '1 1 200px' }}>
-            <label style={{ display: 'block', fontSize: '14px', marginBottom: '5px' }}>Dono do Pet:</label>
-            <select 
-              value={clientId} 
-              onChange={(e) => setClientId(e.target.value)} 
-              required 
-              style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
-            >
+        {error && <Alert>{error}</Alert>}
+        {success && <Alert variant="success">{success}</Alert>}
+
+        <CollectionStatus {...clientsState} />
+        <form onSubmit={handleCreatePet} className="form-grid">
+          <FormField label="Dono do Pet:">
+            <select value={clientId} onChange={(e) => setClientId(e.target.value)} required>
               <option value="">-- Selecione o Cliente --</option>
-              {clients.map(client => (
+              {clients.map((client) => (
                 <option key={client.id} value={client.id}>
                   {client.name} ({client.phone})
                 </option>
               ))}
             </select>
-          </div>
+          </FormField>
 
-          <div style={{ flex: '1 1 200px' }}>
-            <label style={{ display: 'block', fontSize: '14px', marginBottom: '5px' }}>Nome do Pet:</label>
-            <input type="text" value={name} onChange={(e) => setName(e.target.value)} required style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }} />
-          </div>
-          <div style={{ flex: '1 1 200px' }}>
-            <label style={{ display: 'block', fontSize: '14px', marginBottom: '5px' }}>Espécie (Ex: Cão, Gato):</label>
-            <input type="text" value={specie} onChange={(e) => setSpecie(e.target.value)} required style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }} />
-          </div>
-          <div style={{ flex: '1 1 200px' }}>
-            <label style={{ display: 'block', fontSize: '14px', marginBottom: '5px' }}>Raça:</label>
-            <input type="text" value={breed} onChange={(e) => setBreed(e.target.value)} required style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }} />
-          </div>
-          
-          <div style={{ flex: '1 1 100%', marginTop: '10px' }}>
-            <button type="submit" disabled={loading} style={{ padding: '10px 20px', backgroundColor: '#3498db', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+          <FormField label="Nome do Pet:">
+            <input type="text" value={name} onChange={(e) => setName(e.target.value)} required />
+          </FormField>
+          <FormField label="Espécie (Ex: Cão, Gato):">
+            <input
+              type="text"
+              value={specie}
+              onChange={(e) => setSpecie(e.target.value)}
+              required
+            />
+          </FormField>
+          <FormField label="Raça:">
+            <input type="text" value={breed} onChange={(e) => setBreed(e.target.value)} required />
+          </FormField>
+
+          <div className="form-actions">
+            <Button
+              type="submit"
+              disabled={loading || clientsState.loading || Boolean(clientsState.error)}
+            >
               {loading ? 'Salvando...' : '➕ Adicionar Pet'}
-            </button>
+            </Button>
           </div>
         </form>
-      </div>
+      </PageCard>
 
       {/* Tabela de Pets */}
-      <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+      <PageCard>
         <h3>Pets Cadastrados</h3>
-        <div className="table-scroll">
-        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '10px' }}>
-          <thead>
-            <tr style={{ backgroundColor: '#f4f6f9', borderBottom: '2px solid #ddd' }}>
-              <th style={{ padding: '12px', textAlign: 'left' }}>Nome do Pet</th>
-              <th style={{ padding: '12px', textAlign: 'left' }}>Espécie</th>
-              <th style={{ padding: '12px', textAlign: 'left' }}>Raça</th>
-              <th style={{ padding: '12px', textAlign: 'center' }}>Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            {pets.length === 0 ? (
-              <tr><td colSpan="4" style={{ padding: '15px', textAlign: 'center' }}>Nenhum pet cadastrado ainda.</td></tr>
-            ) : (
-              pets.map(pet => (
-                <tr key={pet.id} style={{ borderBottom: '1px solid #eee' }}>
-                  <td style={{ padding: '12px' }}>{pet.name || 'Sem nome'}</td>
-                  <td style={{ padding: '12px' }}>{pet.specie || 'Não informada'}</td>
-                  <td style={{ padding: '12px' }}>{pet.breed || 'Não informada'}</td>
-                  <td style={{ padding: '12px', textAlign: 'center' }}>
-                    <button 
-                      onClick={() => handleDeletePet(pet.id)}
-                      style={{ padding: '6px 12px', backgroundColor: '#e74c3c', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}
-                    >
-                      🗑️ Excluir
-                    </button>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-        </div>
-      </div>
+        <DataTable
+          caption="Pets cadastrados"
+          rows={pets}
+          {...petsState}
+          columns={[
+            { key: 'name', label: 'Nome', value: (row) => row.name },
+            { key: 'specie', label: 'Espécie', value: (row) => row.specie },
+            { key: 'breed', label: 'Raça', value: (row) => row.breed },
+          ]}
+          filter={{
+            label: 'Espécie',
+            options: [
+              ...new Set(
+                pets.map((row) => row.specie).filter((value) => value != null && value !== ''),
+              ),
+            ].map((value) => ({ value: String(value), label: String(value) })),
+            matches: (row, value) => String(row.specie) === value,
+          }}
+          renderActions={(row) => (
+            <>
+              {isAdmin() && (
+                <Button
+                  variant="danger"
+                  disabled={pending.has(row.id)}
+                  onClick={() => handleDeletePet(row.id)}
+                >
+                  {pending.has(row.id) ? 'Aguarde...' : 'Excluir'}
+                </Button>
+              )}
+            </>
+          )}
+        />
+      </PageCard>
     </div>
   );
 }

@@ -1,68 +1,63 @@
 import { useState } from 'react';
-import { API_BASE_URL } from '../config/api';
+import { Link } from 'react-router-dom';
+import { apiFetch, getApiErrorMessage } from '../services/apiFetch';
+import { Alert, Button, FormField } from '../components/ui';
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState('');
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  async function handleSubmit(event) {
+    event.preventDefault();
+    if (loading) return;
+    setLoading(true);
+    setError('');
+    setSuccess('');
     try {
-      
-      const response = await fetch(`${API_BASE_URL}/api/auth/forgot-password`, {
+      const response = await apiFetch('/api/auth/forgot-password', {
+        anonymous: true,
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        
-        body: JSON.stringify({ email: email }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim().toLowerCase() }),
       });
-
-      if (response.ok) {
-        alert('Se o e-mail existir na nossa base, um link de recuperação será enviado!');
-        setEmail(''); 
-      } else {
-        alert('Ocorreu um erro ao tentar enviar o e-mail. Tente novamente mais tarde.');
-      }
-
-    } catch {
-      alert('Erro de conexão com o servidor.');
+      if (!response.ok)
+        throw new Error(
+          await getApiErrorMessage(response, 'Erro ao solicitar a recuperação. Tente novamente.'),
+        );
+      setSuccess('Se o e-mail existir na nossa base, um link de recuperação será enviado.');
+      setEmail('');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
-  };
-
-  const mainStyle = {
-    padding: '2rem',
-    fontFamily: 'sans-serif',
-    minHeight: '80vh',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    marginTop: '50px'
-  };
-
+  }
   return (
-    <main className="forgot-password-page" style={mainStyle}>
-      <h2>Esqueci minha senha</h2>
-      <p>Digite seu e-mail cadastrado para solicitar a redefinição de senha.</p>
-
-      <form className="forgot-password-form" onSubmit={handleSubmit} style={{ textAlign: 'center', marginTop: '20px' }}>
-        <input
-          type="email"
-          placeholder="Digite seu e-mail"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          className="forgot-password-input"
-          style={{ padding: '10px', width: '300px', marginBottom: '15px', borderRadius: '5px', border: '1px solid #ccc' }}
-        />
-        <br />
-        <button 
-          type="submit" 
-          style={{ padding: '10px 20px', cursor: 'pointer', backgroundColor: '#007BFF', color: 'white', border: 'none', borderRadius: '5px', fontWeight: 'bold' }}
-        >
-          Enviar Solicitação
-        </button>
-      </form>
+    <main className="auth-page">
+      <div className="auth-card">
+        <h2>Esqueci minha senha</h2>
+        <p>Digite seu e-mail cadastrado para solicitar a redefinição de senha.</p>
+        <Alert>{error}</Alert>
+        <Alert variant="success">{success}</Alert>
+        <form onSubmit={handleSubmit}>
+          <FormField label="E-mail">
+            <input
+              type="email"
+              autoComplete="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </FormField>
+          <Button type="submit" disabled={loading}>
+            {loading ? 'Enviando...' : 'Enviar solicitação'}
+          </Button>
+        </form>
+        <p>
+          <Link to="/login">Voltar ao login</Link>
+        </p>
+      </div>
     </main>
   );
 }
